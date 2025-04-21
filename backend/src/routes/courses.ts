@@ -8,6 +8,62 @@ const router = express.Router();
 // Apply auth middleware to all routes
 router.use(authMiddleware);
 
+router.get('/tracks/:id', [
+  param('id').isUUID().withMessage('Invalid track ID')
+], async (req: any, res: express.Response) => {
+  try {
+    const trackId = req.params.id;
+    const userId = req.user.id;
+    // Get track details and user progress
+    const { data: track, error } = await supabase
+      .from('learning_tracks')
+      .select(`
+        *,
+        courses: courses (
+          *,
+          progress: user_course_progress (
+            id,
+            status,
+            progress_percentage,
+            updated_at
+          )
+        )
+      `)
+      .eq('id', trackId)
+      .eq('courses.progress.user_id', userId)
+      .single();
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+    if (!track) {
+      return res.status(404).json({
+        success: false,
+        error: 'Track not found'
+      });
+    }
+    // Format courses to match the expected structure
+    const formattedCourses = track.courses.map(course => ({
+      ...course,
+      progress: course.progress?.[0] || null
+    }));
+    const formattedTrack = {
+      ...track,
+      courses: formattedCourses
+    };
+    res.json({
+      success: true,
+      data: formattedTrack
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 // Get all learning tracks (paginated)
 router.get('/tracks', [
   query('limit').optional().isInt({ min: 1, max: 50 }),
@@ -518,6 +574,72 @@ router.post('/concepts', [
     res.status(201).json({
       success: true,
       data
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Reset course progress
+router.post('/courses/:id/reset', [
+  param('id').isUUID().withMessage('Invalid course ID')
+], async (req: any, res: express.Response) => {
+  try {
+    const courseId = req.params.id;
+    const userId = req.user.id;
+
+    // Delete course progress
+    const { error: courseProgressError } = await supabase
+      .from('user_course_progress')
+      .delete()
+      .eq('user_id', userId)
+      .eq('course_id', courseId);
+
+    if (courseProgressError) {
+      return res.status(500).json({
+        success: false,
+        error: courseProgressError.message
+      });
+    }
+
+    // Delete all concept progress for this course
+    // First, get all concept IDs for this course
+    const { data: concepts, error: conceptsError } = await supabase
+      .from('concepts')
+      .select('id')
+      .eq('course_id', courseId);
+
+    if (conceptsError) {
+      return res.status(500).json({
+        success: false,
+        error: conceptsError.message
+      });
+    }
+
+    if (concepts && concepts.length > 0) {
+      const conceptIds = concepts.map(concept => concept.id);
+      
+      // Delete concept progress
+      const { error: conceptProgressError } = await supabase
+        .from('user_concept_progress')
+        .delete()
+        .eq('user_id', userId)
+        .in('concept_id', conceptIds);
+
+      if (conceptProgressError) {
+        return res.status(500).json({
+          success: false,
+          error: conceptProgressError.message
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Course progress has been reset'
     });
   } catch (error: any) {
     res.status(500).json({

@@ -26,7 +26,7 @@ const AdminDashboard: React.FC = () => {
       title: 'Course Content', 
       description: 'Manage concepts, subconcepts, and learning materials',
       icon: <ListTree className="w-8 h-8 text-blue-500" />,
-      link: '/admin/courses',
+      link: '/admin/concepts',
       color: 'bg-blue-100'
     },
     { 

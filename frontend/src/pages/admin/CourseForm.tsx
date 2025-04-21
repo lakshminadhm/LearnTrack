@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Course, CourseDifficulty, AdminCourseCreate } from '../../../../shared/src/types';
 import { useAdmin } from '../../hooks/useAdmin';
 import { useCourses } from '../../hooks/useCourses';
@@ -7,24 +7,50 @@ import { useCourses } from '../../hooks/useCourses';
 const CourseForm: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  const { createCourse, updateCourse, getCourseById, isLoading } = useAdmin();
+  const location = useLocation();
+  const { courses, createCourse, updateCourse, getCourseById, isLoading, fetchCourses } = useAdmin();
   const { tracks } = useCourses();
   
+  // Get trackId from URL query parameters if available
+  const queryParams = new URLSearchParams(location.search);
+  const preSelectedTrackId = queryParams.get('trackId');
+  
   const [formData, setFormData] = useState<AdminCourseCreate>({
-    track_id: '',
+    track_id: preSelectedTrackId || '',
     title: '',
     description: '',
     duration_hours: 0,
     difficulty: CourseDifficulty.BEGINNER
   });
+  const [initialLoading, setInitialLoading] = useState<boolean>(true);
+  const [formInitialized, setFormInitialized] = useState<boolean>(false);
 
   const isEditMode = !!courseId;
 
+  // First ensure courses are loaded
   useEffect(() => {
+    const loadData = async () => {
+      if (isEditMode && (!courses || courses.length === 0)) {
+        console.log('Fetching courses for edit mode...');
+        await fetchCourses();
+      }
+      setInitialLoading(false);
+    };
+
+    loadData();
+  }, [isEditMode, fetchCourses]);
+
+  // Then populate form with course data once courses are loaded
+  useEffect(() => {
+    // Skip if already initialized or still loading
+    if (formInitialized || initialLoading) {
+      return;
+    }
+    
     if (isEditMode && courseId) {
-      // Fetch the course data for editing
       const course = getCourseById(courseId);
       if (course) {
+        console.log('Found course for editing:', course.title);
         setFormData({
           track_id: course.track_id,
           title: course.title,
@@ -33,11 +59,17 @@ const CourseForm: React.FC = () => {
           difficulty: course.difficulty
         });
       } else {
-        // If course not found in state, redirect to courses page
-        navigate('/admin/courses');
+        console.log('Course not found with ID:', courseId);
+        if (courses && courses.length > 0) {
+          console.log('Available course IDs:', courses.map(c => c.id));
+          // Only navigate away if we have courses but couldn't find the one we want
+          navigate('/admin/courses');
+        }
       }
     }
-  }, [courseId, getCourseById, isEditMode, navigate]);
+    // Mark as initialized to prevent multiple attempts
+    setFormInitialized(true);
+  }, [courseId, getCourseById, isEditMode, navigate, courses, initialLoading, formInitialized]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -69,6 +101,17 @@ const CourseForm: React.FC = () => {
   const handleCancel = () => {
     navigate('/admin/courses');
   };
+  
+  if (initialLoading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading course data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

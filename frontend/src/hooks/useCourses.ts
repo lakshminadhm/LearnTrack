@@ -303,6 +303,54 @@ export const useCourses = (options: UseCoursesOptions = {}) => {
     }
   }, [concepts, conceptTree, fetchConceptsForCourse, fetchConceptTree]);
 
+  const getTrackById = useCallback(async (trackId: string): Promise<LearningTrack | null> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await coursesApi.getTrackById(trackId);
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        setError(response.error || 'Failed to fetch track details');
+        toast.error(response.error || 'Failed to fetch track details');
+        return null;
+      }
+    }
+    catch (err) {
+      setError('An error occurred while fetching track details');
+      toast.error('An error occurred while fetching track details');
+      return null;
+    }
+    finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const resetCourse = useCallback(async (courseId: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const response = await coursesApi.resetCourse(courseId);
+      if (response.success) {
+        await fetchProgress();
+        const currentTrackId = courses[0]?.track_id;
+        if (currentTrackId) {
+          await getCoursesForTrack(currentTrackId);
+        }
+        toast.success('Course progress has been reset');
+        return true;
+      } else {
+        toast.error(response.error || 'Failed to reset course progress');
+        return false;
+      }
+    } catch (err) {
+      toast.error('An error occurred while resetting course progress');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchProgress, getCoursesForTrack, courses]);
+
   const debouncedSearch = useCallback(
     debounce((search: string) => {
       setCurrentPage(1);
@@ -347,6 +395,7 @@ export const useCourses = (options: UseCoursesOptions = {}) => {
     goToPage,
     startCourse,
     updateProgress,
+    resetCourse,
     getCoursesForTrack,
     getCourseById,
     toggleConceptCompletion,
@@ -354,7 +403,7 @@ export const useCourses = (options: UseCoursesOptions = {}) => {
     fetchConceptChildren,
     fetchConceptTree,
     completeConcept,
-    createConcept
-    // getTrackById,
+    createConcept,
+    getTrackById,
   };
 };

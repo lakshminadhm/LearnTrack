@@ -22,6 +22,7 @@ const TrackListAdmin = lazy(() => import('./pages/admin/TrackListAdmin'));
 const CourseListAdmin = lazy(() => import('./pages/admin/CourseListAdmin'));
 const TrackForm = lazy(() => import('./pages/admin/TrackForm'));
 const CourseForm = lazy(() => import('./pages/admin/CourseForm'));
+const ConceptManagerAdmin = lazy(() => import('./pages/admin/ConceptManagerAdmin'));
 
 // Loading component for Suspense
 const Loading = () => (
@@ -112,6 +113,11 @@ function App() {
             <Route path="/admin/courses/edit/:courseId" element={
               <AdminRoute>
                 <CourseForm />
+              </AdminRoute>
+            } />
+            <Route path="/admin/concepts" element={
+              <AdminRoute>
+                <ConceptManagerAdmin />
               </AdminRoute>
             } />
             

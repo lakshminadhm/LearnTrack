@@ -228,6 +228,18 @@ export const logsApi = {
 
 // Courses API
 export const coursesApi = {
+  getTrackById: async (trackId: string): Promise<ApiResponse<LearningTrack>> => {
+    try {
+      const response = await api.get<ApiResponse<LearningTrack>>(`/tracks/${trackId}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<LearningTrack>;
+      }
+      return { success: false, error: 'Network error occurred while fetching track details' };
+    }
+  },
+  
   getTracks: async (params: PaginationParams): Promise<ApiResponse<PaginatedResponse<LearningTrack>>> => {
     try {
       const response = await api.get<ApiResponse<PaginatedResponse<LearningTrack>>>('/tracks', { params });
@@ -302,6 +314,18 @@ export const coursesApi = {
         return error.response.data as ApiResponse<null>;
       }
       return { success: false, error: 'Network error occurred while updating concept status' };
+    }
+  },
+
+  resetCourse: async (courseId: string): Promise<ApiResponse<null>> => {
+    try {
+      const response = await api.post<ApiResponse<null>>(`/courses/${courseId}/reset`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<null>;
+      }
+      return { success: false, error: 'Network error occurred while resetting course' };
     }
   },
 

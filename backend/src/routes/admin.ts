@@ -63,6 +63,7 @@ router.post(
         .single();
 
       if (error) {
+        console.error('Error creating track:', error);
         return res.status(500).json({
           success: false,
           error: error.message
@@ -74,6 +75,7 @@ router.post(
         data
       });
     } catch (error: any) {
+      console.error('Unexpected error in create track endpoint:', error);
       res.status(500).json({
         success: false,
         error: error.message
@@ -103,6 +105,7 @@ router.put(
         .single();
 
       if (error) {
+        console.error('Error updating track:', error);
         return res.status(500).json({
           success: false,
           error: error.message
@@ -114,6 +117,7 @@ router.put(
         data
       });
     } catch (error: any) {
+      console.error('Unexpected error in update track endpoint:', error);
       res.status(500).json({
         success: false,
         error: error.message
@@ -136,6 +140,7 @@ router.delete(
         .eq('id', id);
 
       if (error) {
+        console.error('Error deleting track:', error);
         return res.status(500).json({
           success: false,
           error: error.message
@@ -147,6 +152,7 @@ router.delete(
         data: null
       });
     } catch (error: any) {
+      console.error('Unexpected error in delete track endpoint:', error);
       res.status(500).json({
         success: false,
         error: error.message
@@ -158,12 +164,14 @@ router.delete(
 // Get all courses
 router.get('/courses', async (req: express.Request, res: express.Response) => {
   try {
+    console.log('Admin courses endpoint accessed');
     const { data, error } = await supabase
       .from('courses')
       .select('*, learning_tracks(title)')
       .order('created_at', { ascending: false });
 
     if (error) {
+      console.error('Error fetching courses:', error);
       return res.status(500).json({
         success: false,
         error: error.message
@@ -175,6 +183,7 @@ router.get('/courses', async (req: express.Request, res: express.Response) => {
       data
     });
   } catch (error: any) {
+    console.error('Unexpected error in courses endpoint:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -203,6 +212,7 @@ router.post(
         .single();
 
       if (error) {
+        console.error('Error creating course:', error);
         return res.status(500).json({
           success: false,
           error: error.message
@@ -214,6 +224,7 @@ router.post(
         data
       });
     } catch (error: any) {
+      console.error('Unexpected error in create course endpoint:', error);
       res.status(500).json({
         success: false,
         error: error.message
@@ -246,6 +257,7 @@ router.put(
         .single();
 
       if (error) {
+        console.error('Error updating course:', error);
         return res.status(500).json({
           success: false,
           error: error.message
@@ -257,6 +269,7 @@ router.put(
         data
       });
     } catch (error: any) {
+      console.error('Unexpected error in update course endpoint:', error);
       res.status(500).json({
         success: false,
         error: error.message
@@ -279,6 +292,7 @@ router.delete(
         .eq('id', id);
 
       if (error) {
+        console.error('Error deleting course:', error);
         return res.status(500).json({
           success: false,
           error: error.message
@@ -290,6 +304,7 @@ router.delete(
         data: null
       });
     } catch (error: any) {
+      console.error('Unexpected error in delete course endpoint:', error);
       res.status(500).json({
         success: false,
         error: error.message
@@ -304,25 +319,55 @@ router.get('/courses/:id/concepts', [
 ], async (req: express.Request, res: express.Response) => {
   try {
     const { id } = req.params;
+    console.log('Fetching concepts for course:', id);
 
-    const { data, error } = await supabase
+    // Check if the concepts table exists and has the expected structure
+    const { data: tableInfo, error: tableError } = await supabase
       .from('concepts')
       .select('*')
-      .eq('course_id', id)
-      .order('order_number', { ascending: true });
+      .limit(1);
+
+    if (tableError) {
+      console.error('Error checking concepts table:', tableError);
+      return res.status(500).json({
+        success: false,
+        error: tableError.message
+      });
+    }
+
+    // Get all concepts for the course
+    const { data, error } = await supabase
+      .from('concepts')
+      .select('id, parent_id, course_id, name, description, resource_links, created_at, updated_at')
+      .eq('course_id', id);
 
     if (error) {
+      console.error('Error fetching concepts:', error);
       return res.status(500).json({
         success: false,
         error: error.message
       });
     }
 
+    // Transform the data to match the expected format in frontend
+    const transformedData = data.map(concept => ({
+      id: concept.id,
+      parent_id: concept.parent_id,
+      course_id: concept.course_id,
+      title: concept.name,  // Map name to title
+      description: concept.description,
+      resource_link: concept.resource_links?.[0] || '', // Take the first resource link if available
+      order_number: 1, // Default order number
+      created_at: concept.created_at,
+      updated_at: concept.updated_at
+    }));
+
     res.json({
       success: true,
-      data
+      data: transformedData
     });
   } catch (error: any) {
+    console.error('Unexpected error in concepts endpoint:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -334,37 +379,57 @@ router.get('/courses/:id/concepts', [
 router.post('/concepts', [
   body('course_id').isUUID().withMessage('Valid course ID is required'),
   body('title').notEmpty().withMessage('Title is required'),
-  body('order_number').isInt({ min: 1 }).withMessage('Valid order number is required'),
+  body('parent_id').optional().isUUID().withMessage('Parent ID must be a valid UUID'),
   body('description').optional(),
-  body('resource_link').optional().isURL().withMessage('Valid URL is required')
+  body('resource_link').optional().isURL().withMessage('Valid URL is required'),
+  body('order_number').optional().isInt({ min: 1 }).withMessage('Valid order number is required')
 ], async (req: express.Request, res: express.Response) => {
   try {
-    const { course_id, title, description, resource_link, order_number } = req.body;
+    const { course_id, title, description, resource_link, order_number, parent_id } = req.body;
+    console.log('Creating concept with data:', req.body);
+
+    // Transform the data to match the database schema
+    const conceptData = {
+      course_id,
+      name: title, // Map title to name
+      description,
+      parent_id: parent_id || null,
+      resource_links: resource_link ? [resource_link] : [] // Convert single link to array
+    };
 
     const { data, error } = await supabase
       .from('concepts')
-      .insert([{
-        course_id,
-        title,
-        description,
-        resource_link,
-        order_number
-      }])
+      .insert([conceptData])
       .select()
       .single();
 
     if (error) {
+      console.error('Error creating concept:', error);
       return res.status(500).json({
         success: false,
         error: error.message
       });
     }
 
+    // Transform the response to match frontend expectations
+    const transformedData = {
+      id: data.id,
+      parent_id: data.parent_id,
+      course_id: data.course_id,
+      title: data.name,
+      description: data.description,
+      resource_link: data.resource_links?.[0] || '',
+      order_number: order_number || 1,
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
+
     res.status(201).json({
       success: true,
-      data
+      data: transformedData
     });
   } catch (error: any) {
+    console.error('Unexpected error in create concept endpoint:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -377,39 +442,57 @@ router.put('/concepts/:id', [
   param('id').isUUID().withMessage('Invalid concept ID'),
   body('course_id').isUUID().withMessage('Valid course ID is required'),
   body('title').notEmpty().withMessage('Title is required'),
-  body('order_number').isInt({ min: 1 }).withMessage('Valid order number is required'),
   body('description').optional(),
-  body('resource_link').optional().isURL().withMessage('Valid URL is required')
+  body('resource_link').optional().isURL().withMessage('Valid URL is required'),
+  body('order_number').optional().isInt({ min: 1 }).withMessage('Valid order number is required')
 ], async (req: express.Request, res: express.Response) => {
   try {
     const { id } = req.params;
     const { course_id, title, description, resource_link, order_number } = req.body;
+    console.log('Updating concept with data:', req.body);
+
+    // Transform the data to match the database schema
+    const conceptData = {
+      course_id,
+      name: title, // Map title to name
+      description,
+      resource_links: resource_link ? [resource_link] : [] // Convert single link to array
+    };
 
     const { data, error } = await supabase
       .from('concepts')
-      .update({
-        course_id,
-        title,
-        description,
-        resource_link,
-        order_number
-      })
+      .update(conceptData)
       .eq('id', id)
       .select()
       .single();
 
     if (error) {
+      console.error('Error updating concept:', error);
       return res.status(500).json({
         success: false,
         error: error.message
       });
     }
 
+    // Transform the response to match frontend expectations
+    const transformedData = {
+      id: data.id,
+      parent_id: data.parent_id,
+      course_id: data.course_id,
+      title: data.name,
+      description: data.description,
+      resource_link: data.resource_links?.[0] || '',
+      order_number: order_number || 1,
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
+
     res.json({
       success: true,
-      data
+      data: transformedData
     });
   } catch (error: any) {
+    console.error('Unexpected error in update concept endpoint:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -430,6 +513,7 @@ router.delete('/concepts/:id', [
       .eq('id', id);
 
     if (error) {
+      console.error('Error deleting concept:', error);
       return res.status(500).json({
         success: false,
         error: error.message
@@ -441,6 +525,7 @@ router.delete('/concepts/:id', [
       data: null
     });
   } catch (error: any) {
+    console.error('Unexpected error in delete concept endpoint:', error);
     res.status(500).json({
       success: false,
       error: error.message

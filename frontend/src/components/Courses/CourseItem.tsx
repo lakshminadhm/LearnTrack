@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Course, CourseDifficulty, CourseStatus } from '../../../../shared/src/types';
-import { Clock, Award } from 'lucide-react';
+import { Clock, Award, MoreVertical, RotateCcw } from 'lucide-react';
 
 interface CourseItemProps {
   course: Course;
   onStartCourse: (courseId: string) => void;
+  onResetCourse?: (courseId: string) => void;
 }
 
-const CourseItem: React.FC<CourseItemProps> = ({ course, onStartCourse }) => {
+const CourseItem: React.FC<CourseItemProps> = ({ course, onStartCourse, onResetCourse }) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const getDifficultyColor = (difficulty: CourseDifficulty) => {
     switch (difficulty) {
       case CourseDifficulty.BEGINNER:
@@ -38,7 +41,23 @@ const CourseItem: React.FC<CourseItemProps> = ({ course, onStartCourse }) => {
   const handleStartClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    console.log('Starting course:', course.id);
     onStartCourse(course.id);
+  };
+
+  const handleResetClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (onResetCourse) {
+      onResetCourse(course.id);
+    }
+    setShowDropdown(false);
+  };
+
+  const toggleDropdown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setShowDropdown(!showDropdown);
   };
 
   return (
@@ -71,6 +90,25 @@ const CourseItem: React.FC<CourseItemProps> = ({ course, onStartCourse }) => {
             )}
           </div>
         </div>
+        <div className="relative">
+          <button
+            onClick={toggleDropdown}
+            className="p-2 rounded-full hover:bg-gray-100 focus:outline-none"
+          >
+            <MoreVertical className="w-5 h-5 text-gray-600" />
+          </button>
+          {showDropdown && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
+              <button
+                onClick={handleResetClick}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <RotateCcw className="w-4 h-4 inline-block mr-2" />
+                Reset Course
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {course.progress ? (
@@ -81,11 +119,23 @@ const CourseItem: React.FC<CourseItemProps> = ({ course, onStartCourse }) => {
           >
             View Course
           </Link>
-          <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-indigo-600"
-              style={{ width: `${course.progress.progress_percentage}%` }}
-            ></div>
+
+          <div className="flex flex-col space-y-1 w-full max-w-xs">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-700">
+                Progress: {course.progress.progress_percentage}%
+              </span>
+              {course.progress.progress_percentage === 100 && (
+                <span className="text-xl">🎉</span>
+              )}
+            </div>
+
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${course.progress.progress_percentage}%` }}
+              ></div>
+            </div>
           </div>
         </div>
       ) : (

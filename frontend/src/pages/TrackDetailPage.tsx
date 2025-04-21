@@ -10,27 +10,49 @@ const TrackDetailPage: React.FC = () => {
     getTrackById, 
     getCoursesForTrack, 
     isLoading, 
-    error, 
-    enrollCourse, 
-    updateProgress, 
-    toggleConceptCompletion 
+    error,
+    startCourse,
+    updateProgress,
+    resetCourse
   } = useCourses(); 
   const [track, setTrack] = useState<LearningTrack | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
 
+  const fetchCourses = async () => {
+    if (trackId) {
+      const fetchedCourses = await getCoursesForTrack(trackId);
+      if (fetchedCourses) {
+        setCourses(fetchedCourses);
+      }
+    }
+  };
+
   useEffect(() => {
     if (trackId) {
-      getCoursesForTrack(trackId).then(fetchedCourses => {
-        if (fetchedCourses) {
-          setCourses(fetchedCourses);
+      // Load track details
+      getTrackById?.(trackId).then(fetchedTrack => {
+        if (fetchedTrack) {
+          setTrack(fetchedTrack);
         }
       });
+      
+      // Load courses for this track
+      fetchCourses();
     }
   }, [trackId, getCoursesForTrack, getTrackById]);
 
-  const handleToggleConcept = async (courseId: string, conceptId: string, isCompleted: boolean) => {
-    console.log(`Toggling concept ${conceptId} in course ${courseId} to ${isCompleted}`);
-    await new Promise(resolve => setTimeout(resolve, 100)); // Simulate async operation
+  const handleStartCourse = async (courseId: string) => {
+    await startCourse(courseId);
+    // Refetch courses to update UI
+    await fetchCourses();
+  };
+
+  const handleResetCourse = async (courseId: string) => {
+    const success = await resetCourse(courseId);
+    if (success) {
+      // Refetch courses to update UI
+      await fetchCourses();
+    }
   };
 
   if (isLoading && courses.length === 0) return <p>Loading track details...</p>;
@@ -48,9 +70,12 @@ const TrackDetailPage: React.FC = () => {
         <CourseList 
           courses={courses} 
           isLoading={isLoading && courses.length > 0} 
-          onEnroll={enrollCourse} 
-          onUpdateProgress={updateProgress} 
-          onToggleConcept={handleToggleConcept} 
+          onEnroll={handleStartCourse}
+          onReset={handleResetCourse} 
+          onUpdateProgress={(courseId, progress) => {
+            // TypeScript type coercion to match the expected function signature
+            return updateProgress(courseId, progress) as unknown as Promise<void>;
+          }} 
         />
       ) : (
         !isLoading && <p>No courses found for this track.</p>

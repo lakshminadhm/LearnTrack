@@ -25,7 +25,7 @@ const CourseListAdmin: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Course Management</h1>
         <Link 
-          to="/admin/courses/new" 
+          to={selectedTrackId ? `/admin/courses/new?trackId=${selectedTrackId}` : "/admin/courses/new"}
           className="bg-indigo-600 text-white px-4 py-2 rounded-md flex items-center hover:bg-indigo-700"
         >
           <Plus size={18} className="mr-1" />
