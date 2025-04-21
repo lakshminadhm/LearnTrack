@@ -1,11 +1,21 @@
 import express from 'express';
 import { body, param } from 'express-validator';
 import { adminMiddleware } from '../middleware/adminMiddleware';
+import { authMiddleware } from '../middleware/auth';
 import { supabase } from '../index';
 
 const router = express.Router();
 
-// Apply admin middleware to all routes
+// Test endpoint for debugging
+router.get('/test', (req, res) => {
+  return res.json({
+    success: true,
+    message: 'Admin API is working'
+  });
+});
+
+// Apply auth middleware first, then admin middleware to all routes
+router.use(authMiddleware);
 router.use(adminMiddleware);
 
 // Get all tracks

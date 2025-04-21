@@ -2,27 +2,65 @@ import { useState, useEffect, useCallback } from 'react';
 import { LearningTrack, Course, AdminTrackCreate, AdminTrackUpdate, AdminCourseCreate, AdminCourseUpdate } from '../../../shared/src/types';
 import { adminApi } from '../services/api';
 import toast from 'react-hot-toast';
+import { useAuth } from './useAuth';
 
 export const useAdmin = () => {
   const [tracks, setTracks] = useState<LearningTrack[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const { user } = useAuth();
+
+  // First, test connection to the admin API
+  const testAdminConnection = useCallback(async () => {
+    try {
+      const response = await adminApi.testConnection();
+      console.log('Admin API test connection response:', response);
+      if (response.success) {
+        toast.success('Admin API connection successful');
+        return true;
+      } else {
+        console.error('Admin API test failed:', response.error);
+        toast.error(`Admin API error: ${response.error}`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error testing admin API connection:', error);
+      toast.error('Could not connect to admin API');
+      return false;
+    }
+  }, []);
+
+  // Check if the current user has admin rights
+  useEffect(() => {
+    if (user) {
+      setIsAdmin(user.role === 'admin');
+      if (user.role !== 'admin') {
+        toast.error('You do not have admin privileges');
+      }
+    }
+  }, [user]);
 
   const fetchTracks = useCallback(async () => {
     setIsLoading(true);
     try {
+      // // First test connection
+      // await testAdminConnection();
+      
       const response = await adminApi.getTracks();
       if (response.success && response.data) {
         setTracks(response.data);
       } else {
+        console.error('Failed to fetch tracks:', response.error);
         toast.error(response.error || 'Failed to fetch tracks');
       }
     } catch (error) {
+      console.error('Error in fetchTracks:', error);
       toast.error('An error occurred while fetching tracks');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [testAdminConnection]);
 
   const fetchCourses = useCallback(async () => {
     setIsLoading(true);
@@ -173,11 +211,17 @@ export const useAdmin = () => {
     tracks,
     courses,
     isLoading,
+    isAdmin,
+    testAdminConnection,
+    fetchTracks,
+    fetchCourses,
     createTrack,
     updateTrack,
     deleteTrack,
     createCourse,
     updateCourse,
-    deleteCourse
+    deleteCourse,
+    getTrackById: (id: string) => tracks.find(track => track.id === id),
+    getCourseById: (id: string) => courses.find(course => course.id === id)
   };
 };

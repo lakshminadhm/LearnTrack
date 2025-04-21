@@ -3,6 +3,8 @@ import {
   AuthResponse, 
   UserCredentials, 
   UserRegistration,
+  AdminTrackCreate,
+  AdminCourseCreate,
   ApiResponse,
   Streak,
   Progress,
@@ -18,7 +20,8 @@ import {
   UserCourseProgress,
   PaginatedResponse,
   PaginationParams,
-  Concept
+  Concept,
+  AdminConceptUpdate
 } from '../../../shared/src/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -405,6 +408,181 @@ export const communityApi = {
         return error.response.data as ApiResponse<Post>;
       }
       return { success: false, error: 'Network error occurred' };
+    }
+  }
+};
+
+// Admin API
+export const adminApi = {
+  // Test endpoint that doesn't require authentication
+  testConnection: async (): Promise<ApiResponse<any>> => {
+    try {
+      const response = await api.get<ApiResponse<any>>('/admin/test');
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<any>;
+      }
+      return { success: false, error: 'Network error occurred while testing admin API connection' };
+    }
+  },
+
+  // Tracks management
+  getTracks: async (): Promise<ApiResponse<LearningTrack[]>> => {
+    try {
+      const response = await api.get<ApiResponse<LearningTrack[]>>('/admin/tracks');
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<LearningTrack[]>;
+      }
+      return { success: false, error: 'Network error occurred while fetching tracks' };
+    }
+  },
+
+  createTrack: async (data: AdminTrackCreate): Promise<ApiResponse<LearningTrack>> => {
+    try {
+      const response = await api.post<ApiResponse<LearningTrack>>('/admin/tracks', data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<LearningTrack>;
+      }
+      return { success: false, error: 'Network error occurred while creating track' };
+    }
+  },
+
+  updateTrack: async (id: string, data: AdminTrackCreate): Promise<ApiResponse<LearningTrack>> => {
+    try {
+      const response = await api.put<ApiResponse<LearningTrack>>(`/admin/tracks/${id}`, data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<LearningTrack>;
+      }
+      return { success: false, error: 'Network error occurred while updating track' };
+    }
+  },
+
+  deleteTrack: async (id: string): Promise<ApiResponse<null>> => {
+    try {
+      const response = await api.delete<ApiResponse<null>>(`/admin/tracks/${id}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<null>;
+      }
+      return { success: false, error: 'Network error occurred while deleting track' };
+    }
+  },
+
+  // Courses management
+  getCourses: async (): Promise<ApiResponse<Course[]>> => {
+    try {
+      const response = await api.get<ApiResponse<Course[]>>('/admin/courses');
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Course[]>;
+      }
+      return { success: false, error: 'Network error occurred while fetching courses' };
+    }
+  },
+
+  getCourseById: async (id: string): Promise<ApiResponse<Course>> => {
+    try {
+      const response = await api.get<ApiResponse<Course>>(`/admin/courses/${id}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Course>;
+      }
+      return { success: false, error: 'Network error occurred while fetching course' };
+    }
+  },
+
+  createCourse: async (data: AdminCourseCreate): Promise<ApiResponse<Course>> => {
+    try {
+      const response = await api.post<ApiResponse<Course>>('/admin/courses', data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Course>;
+      }
+      return { success: false, error: 'Network error occurred while creating course' };
+    }
+  },
+
+  updateCourse: async (id: string, data: AdminCourseCreate): Promise<ApiResponse<Course>> => {
+    try {
+      const response = await api.put<ApiResponse<Course>>(`/admin/courses/${id}`, data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Course>;
+      }
+      return { success: false, error: 'Network error occurred while updating course' };
+    }
+  },
+
+  deleteCourse: async (id: string): Promise<ApiResponse<null>> => {
+    try {
+      const response = await api.delete<ApiResponse<null>>(`/admin/courses/${id}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<null>;
+      }
+      return { success: false, error: 'Network error occurred while deleting course' };
+    }
+  },
+
+  // Concepts management for admin
+  getConceptsForCourse: async (courseId: string): Promise<ApiResponse<Concept[]>> => {
+    try {
+      const response = await api.get<ApiResponse<Concept[]>>(`/admin/courses/${courseId}/concepts`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Concept[]>;
+      }
+      return { success: false, error: 'Network error occurred while fetching concepts' };
+    }
+  },
+
+  createConcept: async (data: AdminCourseCreate): Promise<ApiResponse<Concept>> => {
+    try {
+      const response = await api.post<ApiResponse<Concept>>('/admin/concepts', data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Concept>;
+      }
+      return { success: false, error: 'Network error occurred while creating concept' };
+    }
+  },
+
+  updateConcept: async (id: string, data: AdminConceptUpdate): Promise<ApiResponse<Concept>> => {
+    try {
+      const response = await api.put<ApiResponse<Concept>>(`/admin/concepts/${id}`, data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Concept>;
+      }
+      return { success: false, error: 'Network error occurred while updating concept' };
+    }
+  },
+
+  deleteConcept: async (id: string): Promise<ApiResponse<null>> => {
+    try {
+      const response = await api.delete<ApiResponse<null>>(`/admin/concepts/${id}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<null>;
+      }
+      return { success: false, error: 'Network error occurred while deleting concept' };
     }
   }
 };

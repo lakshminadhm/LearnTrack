@@ -10,7 +10,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import TrackDetailPage from './pages/TrackDetailPage';
-import CourseDetailPage from './pages/CourseDetailPage'; // Import the CourseDetailPage
+import CourseDetailPage from './pages/CourseDetailPage';
 
 // Lazy loaded pages
 const LogsPage = lazy(() => import('./pages/LogsPage'));
@@ -18,10 +18,10 @@ const GoalsPage = lazy(() => import('./pages/GoalsPage'));
 const CommunityPage = lazy(() => import('./pages/CommunityPage'));
 const CoursesPage = lazy(() => import('./pages/CoursesPage'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const TrackListAdmin = lazy(() => import('./components/Admin/TrackListAdmin'));
-const TrackForm = lazy(() => import('./components/Admin/TrackForm'));
-const CourseListAdmin = lazy(() => import('./components/Admin/CourseListAdmin'));
-const CourseForm = lazy(() => import('./components/Admin/CourseForm'));
+const TrackListAdmin = lazy(() => import('./pages/admin/TrackListAdmin'));
+const CourseListAdmin = lazy(() => import('./pages/admin/CourseListAdmin'));
+const TrackForm = lazy(() => import('./pages/admin/TrackForm'));
+const CourseForm = lazy(() => import('./pages/admin/CourseForm'));
 
 // Loading component for Suspense
 const Loading = () => (
@@ -86,57 +86,32 @@ function App() {
             } />
             <Route path="/admin/tracks" element={
               <AdminRoute>
-                <TrackListAdmin 
-                  tracks={[]} 
-                  onEdit={(trackId) => console.log(`Edit track ${trackId}`)} 
-                  onDelete={(trackId) => console.log(`Delete track ${trackId}`)} 
-                  isLoading={false} 
-                />
+                <TrackListAdmin />
               </AdminRoute>
             } />
             <Route path="/admin/tracks/new" element={
               <AdminRoute>
-                <TrackForm 
-                  onSubmit={(formData) => console.log('Form submitted', formData)} 
-                  isLoading={false} 
-                />
+                <TrackForm />
               </AdminRoute>
             } />
             <Route path="/admin/tracks/edit/:trackId" element={
               <AdminRoute>
-                <TrackForm 
-                  onSubmit={(formData) => console.log('Form submitted', formData)} 
-                  isLoading={false} 
-                />
+                <TrackForm />
               </AdminRoute>
             } />
             <Route path="/admin/courses" element={
               <AdminRoute>
-                <CourseListAdmin 
-                  courses={[]} 
-                  tracks={[]} 
-                  onEdit={(courseId) => console.log(`Edit course ${courseId}`)} 
-                  onDelete={(courseId) => console.log(`Delete course ${courseId}`)} 
-                  isLoading={false} 
-                />
+                <CourseListAdmin />
               </AdminRoute>
             } />
             <Route path="/admin/courses/new" element={
               <AdminRoute>
-                <CourseForm 
-                  tracks={[]} 
-                  onSubmit={(formData) => console.log('Form submitted', formData)} 
-                  isLoading={false} 
-                />
+                <CourseForm />
               </AdminRoute>
             } />
             <Route path="/admin/courses/edit/:courseId" element={
               <AdminRoute>
-                <CourseForm 
-                  tracks={[]} 
-                  onSubmit={(formData) => console.log('Form submitted', formData)} 
-                  isLoading={false} 
-                />
+                <CourseForm />
               </AdminRoute>
             } />
             

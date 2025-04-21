@@ -15,6 +15,7 @@ import analyticsRoutes from './routes/analytics';
 import goalRoutes from './routes/goals';
 import communityRoutes from './routes/community';
 import coursesRoutes from './routes/courses';
+import adminRoutes from './routes/admin';
 
 // Middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -53,6 +54,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api', coursesRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
