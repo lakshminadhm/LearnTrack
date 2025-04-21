@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, BookOpen, BarChart2, ClipboardList, Target, Users, LogOut, LogIn, UserPlus, GraduationCap } from 'lucide-react';
+import { Menu, X, BookOpen, BarChart2, ClipboardList, Target, Users, LogOut, LogIn, UserPlus, GraduationCap, Settings } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
   const location = useLocation();
 
   const toggleMenu = () => {
@@ -28,6 +28,7 @@ const Navbar: React.FC = () => {
     { path: '/goals', label: 'Goals', icon: <Target className="w-5 h-5" />, auth: true },
     { path: '/courses', label: 'Courses', icon: <GraduationCap className="w-5 h-5" />, auth: true },
     { path: '/community', label: 'Community', icon: <Users className="w-5 h-5" />, auth: true },
+    { path: '/admin', label: 'Admin', icon: <Settings className="w-5 h-5" />, auth: true, adminOnly: true },
   ];
 
   const authLinks = [
@@ -50,7 +51,7 @@ const Navbar: React.FC = () => {
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-4">
               {navLinks.map((link) => (
-                (!link.auth || isAuthenticated) && (
+                (!link.auth || isAuthenticated) && (!link.adminOnly || isAdmin) && (
                   <Link
                     key={link.path}
                     to={link.path}
@@ -119,7 +120,7 @@ const Navbar: React.FC = () => {
       <div className={`md:hidden ${isOpen ? 'block' : 'hidden'}`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
           {navLinks.map((link) => (
-            (!link.auth || isAuthenticated) && (
+            (!link.auth || isAuthenticated) && (!link.adminOnly || isAdmin) && (
               <Link
                 key={link.path}
                 to={link.path}

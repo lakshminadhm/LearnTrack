@@ -136,10 +136,13 @@ export const useAuth = () => {
     }
   }, []);
 
+  const isAdmin = authState.user?.role === 'admin';
+
   return {
     user: authState.user,
     isAuthenticated: authState.isAuthenticated,
     isLoading: authState.isLoading,
+    isAdmin,
     login,
     register,
     logout

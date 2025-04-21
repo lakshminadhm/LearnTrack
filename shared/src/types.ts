@@ -3,6 +3,7 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  role?: 'user' | 'admin';
   created_at: Date;
   updated_at: Date;
 }
@@ -67,8 +68,6 @@ export interface GoalCreate {
   status: GoalStatus;
 }
 
-// Course interfaces
-
 // Concept interfaces for hierarchical structure
 export interface Concept {
   id: string;
@@ -94,27 +93,7 @@ export interface UserConceptProgress {
   updated_at: string;
 }
 
-// New interfaces for detailed course structure
-export interface ConceptDetail {
-  id: string; // Unique ID for the concept
-  name: string;
-  description: string;
-  is_completed?: boolean; // Optional: Track completion status (might be managed per user)
-  resource_links?: string[]; // Optional array of URLs
-}
-
-export interface CourseSubSection {
-  id: string; // Unique ID for the subsection
-  title: string;
-  concepts: ConceptDetail[];
-}
-
-export interface CourseSection {
-  id: string; // Unique ID for the section
-  title: string;
-  sub_sections: CourseSubSection[];
-}
-
+// Course interfaces
 export interface LearningTrack {
   id: string;
   title: string;
@@ -131,8 +110,8 @@ export interface Course {
   duration_hours: number;
   difficulty: CourseDifficulty;
   created_at: Date;
+  concepts?: Concept[];
   progress?: UserCourseProgress;
-  sections?: CourseSection[]; // Replace previous sections/topics with this structured data
 }
 
 export enum CourseDifficulty {
@@ -212,4 +191,38 @@ export interface PaginationParams {
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
+}
+
+// Admin interfaces
+export interface AdminTrackCreate {
+  title: string;
+  description: string;
+}
+
+export interface AdminTrackUpdate extends AdminTrackCreate {
+  id: string;
+}
+
+export interface AdminCourseCreate {
+  track_id: string;
+  title: string;
+  description: string;
+  duration_hours: number;
+  difficulty: CourseDifficulty;
+}
+
+export interface AdminCourseUpdate extends AdminCourseCreate {
+  id: string;
+}
+
+export interface AdminConceptCreate {
+  course_id: string;
+  parent_id?: string;
+  name: string;
+  description?: string;
+  resource_links?: string[];
+}
+
+export interface AdminConceptUpdate extends AdminConceptCreate {
+  id: string;
 }
