@@ -17,7 +17,8 @@ import {
   Course,
   UserCourseProgress,
   PaginatedResponse,
-  PaginationParams
+  PaginationParams,
+  Concept
 } from '../../../shared/src/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -298,6 +299,73 @@ export const coursesApi = {
         return error.response.data as ApiResponse<null>;
       }
       return { success: false, error: 'Network error occurred while updating concept status' };
+    }
+  },
+
+  // Concept related API methods
+  getCourseConcepts: async (courseId: string): Promise<ApiResponse<Concept[]>> => {
+    try {
+      const response = await api.get<ApiResponse<Concept[]>>(`/courses/${courseId}/concepts`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Concept[]>;
+      }
+      return { success: false, error: 'Network error occurred while fetching course concepts' };
+    }
+  },
+
+  getConceptChildren: async (conceptId: string): Promise<ApiResponse<Concept[]>> => {
+    try {
+      const response = await api.get<ApiResponse<Concept[]>>(`/concepts/${conceptId}/children`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Concept[]>;
+      }
+      return { success: false, error: 'Network error occurred while fetching concept children' };
+    }
+  },
+
+  getConceptTree: async (courseId: string): Promise<ApiResponse<Concept[]>> => {
+    try {
+      const response = await api.get<ApiResponse<Concept[]>>(`/courses/${courseId}/concept-tree`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Concept[]>;
+      }
+      return { success: false, error: 'Network error occurred while fetching concept tree' };
+    }
+  },
+
+  completeConcept: async (conceptId: string): Promise<ApiResponse<any>> => {
+    try {
+      const response = await api.post<ApiResponse<any>>(`/concepts/${conceptId}/complete`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<any>;
+      }
+      return { success: false, error: 'Network error occurred while completing concept' };
+    }
+  },
+
+  createConcept: async (data: {
+    courseId: string;
+    name: string;
+    description?: string;
+    parentId?: string;
+    resourceLinks?: string[];
+  }): Promise<ApiResponse<Concept>> => {
+    try {
+      const response = await api.post<ApiResponse<Concept>>('/concepts', data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return error.response.data as ApiResponse<Concept>;
+      }
+      return { success: false, error: 'Network error occurred while creating concept' };
     }
   }
 };

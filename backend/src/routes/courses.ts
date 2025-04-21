@@ -260,4 +260,271 @@ router.get('/courses/:id', [
   }
 });
 
+// Get all concepts for a course (includes top-level concepts only)
+router.get('/courses/:id/concepts', [
+  param('id').isUUID().withMessage('Invalid course ID')
+], async (req: any, res: express.Response) => {
+  try {
+    const courseId = req.params.id;
+    const userId = req.user.id;
+
+    // Get top-level concepts (concepts where parent_id is null)
+    const { data: concepts, error } = await supabase
+      .from('concepts')
+      .select(`
+        *,
+        progress:user_concept_progress(
+          id,
+          is_completed,
+          completed_at
+        )
+      `)
+      .eq('course_id', courseId)
+      .is('parent_id', null)
+      .eq('progress.user_id', userId);
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    // Format concepts to match the expected structure
+    const formattedConcepts = concepts.map(concept => ({
+      ...concept,
+      progress: concept.progress?.[0] || null
+    }));
+
+    res.json({
+      success: true,
+      data: formattedConcepts
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get child concepts for a specific concept
+router.get('/concepts/:id/children', [
+  param('id').isUUID().withMessage('Invalid concept ID')
+], async (req: any, res: express.Response) => {
+  try {
+    const conceptId = req.params.id;
+    const userId = req.user.id;
+
+    // Get child concepts for the specified parent
+    const { data: childConcepts, error } = await supabase
+      .from('concepts')
+      .select(`
+        *,
+        progress:user_concept_progress(
+          id,
+          is_completed,
+          completed_at
+        )
+      `)
+      .eq('parent_id', conceptId)
+      .eq('progress.user_id', userId);
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    // Format concepts to match the expected structure
+    const formattedConcepts = childConcepts.map(concept => ({
+      ...concept,
+      progress: concept.progress?.[0] || null
+    }));
+
+    res.json({
+      success: true,
+      data: formattedConcepts
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get entire concept tree for a course (hierarchical structure)
+router.get('/courses/:id/concept-tree', [
+  param('id').isUUID().withMessage('Invalid course ID')
+], async (req: any, res: express.Response) => {
+  try {
+    const courseId = req.params.id;
+    const userId = req.user.id;
+
+    // Get all concepts for the course
+    const { data: allConcepts, error } = await supabase
+      .from('concepts')
+      .select(`
+        *,
+        progress:user_concept_progress(
+          id,
+          is_completed,
+          completed_at
+        )
+      `)
+      .eq('course_id', courseId)
+      .eq('progress.user_id', userId);
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    // Format concepts to match the expected structure
+    const formattedConcepts = allConcepts.map(concept => ({
+      ...concept,
+      progress: concept.progress?.[0] || null,
+      children: []
+    }));
+
+    // Build the tree structure
+    const conceptMap = new Map();
+    formattedConcepts.forEach(concept => {
+      conceptMap.set(concept.id, concept);
+    });
+
+    const rootConcepts = [];
+    formattedConcepts.forEach(concept => {
+      if (concept.parent_id) {
+        const parent = conceptMap.get(concept.parent_id);
+        if (parent) {
+          parent.children.push(concept);
+        }
+      } else {
+        rootConcepts.push(concept);
+      }
+    });
+
+    res.json({
+      success: true,
+      data: rootConcepts
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Mark a concept as completed
+router.post('/concepts/:id/complete', [
+  param('id').isUUID().withMessage('Invalid concept ID')
+], async (req: any, res: express.Response) => {
+  try {
+    const conceptId = req.params.id;
+    const userId = req.user.id;
+
+    // Check if progress entry already exists
+    const { data: existingProgress } = await supabase
+      .from('user_concept_progress')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('concept_id', conceptId)
+      .single();
+
+    let result;
+    
+    if (existingProgress) {
+      // Update existing progress
+      result = await supabase
+        .from('user_concept_progress')
+        .update({
+          is_completed: true,
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingProgress.id)
+        .select()
+        .single();
+    } else {
+      // Create new progress entry
+      result = await supabase
+        .from('user_concept_progress')
+        .insert([{
+          user_id: userId,
+          concept_id: conceptId,
+          is_completed: true,
+          completed_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+    }
+
+    if (result.error) {
+      return res.status(500).json({
+        success: false,
+        error: result.error.message
+      });
+    }
+
+    res.json({
+      success: true,
+      data: result.data
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Create a new concept
+router.post('/concepts', [
+  body('courseId').isUUID().withMessage('Invalid course ID'),
+  body('name').isString().notEmpty().withMessage('Concept name is required'),
+  body('description').optional().isString(),
+  body('parentId').optional().isUUID().withMessage('Invalid parent concept ID'),
+  body('resourceLinks').optional().isArray()
+], async (req: any, res: express.Response) => {
+  try {
+    const { courseId, name, description, parentId, resourceLinks } = req.body;
+
+    // Create new concept
+    const { data, error } = await supabase
+      .from('concepts')
+      .insert([{
+        course_id: courseId,
+        parent_id: parentId || null,
+        name,
+        description,
+        resource_links: resourceLinks || []
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      data
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 export default router;

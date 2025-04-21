@@ -69,6 +69,31 @@ export interface GoalCreate {
 
 // Course interfaces
 
+// Concept interfaces for hierarchical structure
+export interface Concept {
+  id: string;
+  parent_id: string | null;
+  course_id: string;
+  name: string;
+  description: string | null;
+  is_completed: boolean;
+  resource_links: string[] | null;
+  created_at: string;
+  updated_at: string;
+  progress?: UserConceptProgress | null;
+  children?: Concept[]; // For hierarchical structure
+}
+
+export interface UserConceptProgress {
+  id: string;
+  user_id: string;
+  concept_id: string;
+  is_completed: boolean;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // New interfaces for detailed course structure
 export interface ConceptDetail {
   id: string; // Unique ID for the concept

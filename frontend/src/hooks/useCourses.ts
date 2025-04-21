@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LearningTrack, Course, UserCourseProgress, PaginationParams } from '../../../shared/src/types';
+import { LearningTrack, Course, UserCourseProgress, PaginationParams, Concept } from '../../../shared/src/types';
 import { coursesApi } from '../services/api';
 import toast from 'react-hot-toast';
 import debounce from 'lodash.debounce';
@@ -16,6 +16,8 @@ export const useCourses = (options: UseCoursesOptions = {}) => {
   const [currentPage, setCurrentPage] = useState<number>(initialPage);
   const [courses, setCourses] = useState<Course[]>([]);
   const [progress, setProgress] = useState<UserCourseProgress[]>([]);
+  const [concepts, setConcepts] = useState<Concept[]>([]);
+  const [conceptTree, setConceptTree] = useState<Concept[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -176,6 +178,131 @@ export const useCourses = (options: UseCoursesOptions = {}) => {
     }
   }, [fetchProgress]);
 
+  const fetchConceptsForCourse = useCallback(async (courseId: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await coursesApi.getCourseConcepts(courseId);
+      
+      if (response.success && response.data) {
+        setConcepts(response.data);
+        return response.data;
+      } else {
+        setError(response.error || 'Failed to fetch concepts');
+        toast.error(response.error || 'Failed to fetch concepts');
+        return [];
+      }
+    } catch (err) {
+      setError('An error occurred while fetching concepts');
+      toast.error('An error occurred while fetching concepts');
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchConceptChildren = useCallback(async (conceptId: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await coursesApi.getConceptChildren(conceptId);
+      
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        setError(response.error || 'Failed to fetch concept children');
+        toast.error(response.error || 'Failed to fetch concept children');
+        return [];
+      }
+    } catch (err) {
+      setError('An error occurred while fetching concept children');
+      toast.error('An error occurred while fetching concept children');
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchConceptTree = useCallback(async (courseId: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await coursesApi.getConceptTree(courseId);
+      
+      if (response.success && response.data) {
+        setConceptTree(response.data);
+        return response.data;
+      } else {
+        setError(response.error || 'Failed to fetch concept tree');
+        toast.error(response.error || 'Failed to fetch concept tree');
+        setConceptTree([]);
+        return [];
+      }
+    } catch (err) {
+      setError('An error occurred while fetching concept tree');
+      toast.error('An error occurred while fetching concept tree');
+      setConceptTree([]);
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const completeConcept = useCallback(async (conceptId: string) => {
+    try {
+      const response = await coursesApi.completeConcept(conceptId);
+      
+      if (response.success) {
+        toast.success('Concept marked as completed');
+        return true;
+      } else {
+        toast.error(response.error || 'Failed to complete concept');
+        return false;
+      }
+    } catch (err) {
+      toast.error('An error occurred while completing concept');
+      return false;
+    }
+  }, []);
+
+  const createConcept = useCallback(async (data: {
+    courseId: string;
+    name: string;
+    description?: string;
+    parentId?: string;
+    resourceLinks?: string[];
+  }) => {
+    setIsLoading(true);
+    
+    try {
+      const response = await coursesApi.createConcept(data);
+      
+      if (response.success && response.data) {
+        toast.success('Concept created successfully');
+        // Refresh concepts list if we're viewing the same course
+        if (concepts.length > 0 && concepts[0].course_id === data.courseId) {
+          await fetchConceptsForCourse(data.courseId);
+        }
+        // Refresh concept tree if we're viewing the same course
+        if (conceptTree.length > 0 && conceptTree[0].course_id === data.courseId) {
+          await fetchConceptTree(data.courseId);
+        }
+        return response.data;
+      } else {
+        toast.error(response.error || 'Failed to create concept');
+        return null;
+      }
+    } catch (err) {
+      toast.error('An error occurred while creating concept');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [concepts, conceptTree, fetchConceptsForCourse, fetchConceptTree]);
+
   const debouncedSearch = useCallback(
     debounce((search: string) => {
       setCurrentPage(1);
@@ -209,6 +336,8 @@ export const useCourses = (options: UseCoursesOptions = {}) => {
     tracks,
     courses,
     progress,
+    concepts,
+    conceptTree,
     isLoading,
     error,
     currentPage,
@@ -221,6 +350,11 @@ export const useCourses = (options: UseCoursesOptions = {}) => {
     getCoursesForTrack,
     getCourseById,
     toggleConceptCompletion,
+    fetchConceptsForCourse,
+    fetchConceptChildren,
+    fetchConceptTree,
+    completeConcept,
+    createConcept
     // getTrackById,
   };
 };
