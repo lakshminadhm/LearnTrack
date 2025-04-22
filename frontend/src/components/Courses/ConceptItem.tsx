@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Concept } from '../../../../shared/src/types';
-import { ChevronDown, ChevronRight, ExternalLink, CheckCircle, Circle, Loader2, BookOpen, Link2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, ExternalLink, CheckCircle, Circle, Loader2, BookOpen, Link2, X } from 'lucide-react';
 
 interface ConceptItemProps {
   concept: Concept;
@@ -8,7 +8,7 @@ interface ConceptItemProps {
   onLoadChildren?: (conceptId: string) => Promise<Concept[]>;
   depth?: number;
   expanded?: boolean;
-  onChildComplete?: (childId: string) => void; // New prop to notify parent of child completion
+  onChildComplete?: (childId: string) => void;
 }
 
 const ConceptItem: React.FC<ConceptItemProps> = ({ 
@@ -23,17 +23,39 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
   const [childConcepts, setChildConcepts] = useState<Concept[]>(concept.children || []);
   const [isLoading, setIsLoading] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
-  const [showResources, setShowResources] = useState(false);
+  const [showResourcesPopup, setShowResourcesPopup] = useState(false);
   const [progressPercentage, setProgressPercentage] = useState<number>(0);
   const [localIsCompleted, setLocalIsCompleted] = useState(concept.progress?.is_completed || concept.is_completed || false);
+  const popupRef = useRef<HTMLDivElement>(null);
   
   const hasChildren = childConcepts.length > 0 || (concept.children?.length ?? 0) > 0;
   const isCompleted = localIsCompleted;
   const hasResources = concept.resource_links && concept.resource_links.length > 0;
   
-  // Handle child completion notification
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Only close if click is outside the popup AND not on the toggle button
+      const toggleButton = document.querySelector(`[data-concept-id="${concept.id}"]`);
+      if (
+        popupRef.current && 
+        !popupRef.current.contains(event.target as Node) &&
+        toggleButton && 
+        !toggleButton.contains(event.target as Node)
+      ) {
+        setShowResourcesPopup(false);
+      }
+    };
+
+    if (showResourcesPopup) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showResourcesPopup, concept.id]);
+  
   const handleChildComplete = useCallback((childId: string) => {
-    // Update the child's completed status in our local state
     setChildConcepts(prevChildren => 
       prevChildren.map(child => 
         child.id === childId 
@@ -42,16 +64,13 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
       )
     );
     
-    // Propagate the notification upward if we have a parent
     if (onChildComplete) {
       onChildComplete(childId);
     }
   }, [onChildComplete]);
   
-  // Calculate progress percentage for this concept based on children completion
   useEffect(() => {
     if (hasChildren && childConcepts.length > 0) {
-      // Count completed concepts (including nested children)
       const countCompletedConcepts = (concepts: Concept[]): { completed: number, total: number } => {
         let completed = 0;
         let total = concepts.length;
@@ -75,9 +94,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
       const percentage = counts.total > 0 ? Math.round((counts.completed / counts.total) * 100) : 0;
       setProgressPercentage(percentage);
       
-      // Auto-complete parent when all children are completed (100%)
       if (percentage === 100 && !isCompleted && !isCompleting) {
-        // Automatically mark the parent concept as completed
         handleAutoComplete();
       }
     } else {
@@ -85,20 +102,16 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
     }
   }, [childConcepts, hasChildren, isCompleted, isCompleting]);
   
-  // Function to automatically mark parent as complete when all children are completed
   const handleAutoComplete = async () => {
-    // Don't auto-complete if already completed or in progress
     if (isCompleted || isCompleting) return;
     
     setIsCompleting(true);
     try {
       const success = await onComplete(concept.id);
       if (success) {
-        // Update local state to show completion immediately
         setLocalIsCompleted(true);
         console.log(`Auto-completed parent concept: ${concept.title}`);
         
-        // Notify parent component that this concept has been completed
         if (onChildComplete) {
           onChildComplete(concept.id);
         }
@@ -131,10 +144,8 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
     try {
       const success = await onComplete(concept.id);
       if (success) {
-        // Update local state to show completion immediately
         setLocalIsCompleted(true);
         
-        // Notify parent component that this concept has been completed
         if (onChildComplete) {
           onChildComplete(concept.id);
         }
@@ -144,9 +155,9 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
     }
   };
 
-  const toggleResources = (e: React.MouseEvent) => {
+  const toggleResourcesPopup = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowResources(!showResources);
+    setShowResourcesPopup(!showResourcesPopup);
   };
   
   const paddingLeft = `${depth * 1.5}rem`;
@@ -154,7 +165,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
   return (
     <div className={`concept-item ${isCompleted ? 'completed' : ''}`}>
       <div 
-        className={`flex items-center p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${
+        className={`flex items-center p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-200 relative ${
           isCompleted ? 'bg-green-50 hover:bg-green-100' : ''
         }`}
         style={{ paddingLeft }}
@@ -188,19 +199,8 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
           <div className="flex items-center">
             <span className={`font-medium transition-colors ${isCompleted ? 'text-green-800' : 'text-gray-800'}`}>
               {concept.title}
-            </span>
-            
-            {hasResources && (
-              <button
-                onClick={toggleResources}
-                className="ml-2 p-1 rounded-full hover:bg-indigo-100 text-indigo-500 transition-colors focus:outline-none"
-                title={`${showResources ? 'Hide' : 'Show'} resources`}
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-              </button>
-            )}
-            
-            {/* Progress indicator for parent concepts */}
+            </span>         
+
             {hasChildren && (
               <div className="ml-3 flex items-center">
                 <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -222,6 +222,17 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
         </div>
         
         <div className="flex items-center space-x-2">
+          {hasResources && (
+            <button
+              onClick={toggleResourcesPopup}
+              className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-500 transition-colors focus:outline-none flex items-center space-x-1 text-xs"
+              title={`${showResourcesPopup ? 'Hide' : 'Show'} resources`}
+              data-concept-id={concept.id}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              <span>{showResourcesPopup ? 'Hide' : 'Show'} Resources</span>
+            </button>
+          )}
           <button 
             onClick={handleMarkComplete}
             className={`p-1.5 rounded-full focus:outline-none transition-all duration-200 ${
@@ -241,34 +252,47 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
             )}
           </button>
         </div>
-      </div>
-      
-      {showResources && hasResources && (
-        <div 
-          className="pl-10 pr-4 pb-2 pt-0 bg-indigo-50 border-l-2 border-indigo-300 ml-6"
-          style={{ marginLeft: `${depth * 1.5 + 1.5}rem` }}
-        >
-          <div className="text-xs font-medium text-indigo-700 uppercase tracking-wide py-1">
-            Learning Resources
-          </div>
-          <ul className="space-y-1">
-            {(concept.resource_links ?? []).map((link, index) => (
-              <li key={index} className="flex items-center">
-                <Link2 className="h-3 w-3 text-indigo-400 mr-2" />
-                <a 
-                  href={link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline truncate"
-                  onClick={(e) => e.stopPropagation()}
+        
+        {showResourcesPopup && hasResources && (
+          <div 
+            className="absolute right-0 z-10 mt-2 w-96 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            style={{ top: '100%', right: '10px' }}
+            ref={popupRef}
+          >
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-indigo-700">
+                  Learning Resources
+                </h3>
+                <button 
+                  onClick={toggleResourcesPopup}
+                  className="text-gray-400 hover:text-gray-600 focus:outline-none"
                 >
-                  {link.length > 50 ? `${link.substring(0, 50)}...` : link}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <ul className="space-y-3 max-h-60 overflow-y-auto">
+                {(concept.resource_links ?? []).map((link, index) => (
+                  <li key={index} className="group border-b border-gray-100 pb-2 last:border-0 last:pb-0">
+                    <a 
+                      href={link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-start p-1 rounded-md hover:bg-indigo-50 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Link2 className="h-4 w-4 text-indigo-500 mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-sm text-indigo-600 hover:text-indigo-800 group-hover:underline break-all">
+                        {link}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
       
       {isExpanded && childConcepts.length > 0 && (
         <div className="concept-children">
