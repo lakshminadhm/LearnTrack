@@ -1,14 +1,13 @@
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -18,12 +17,11 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
-    // Redirect to home page with a return URL
-    return <Navigate to="/" state={{ from: location }} replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
   }
 
-  return <>{children}</>;
+  return isAdmin ? <>{children}</> : <Navigate to="/dashboard" />;
 };
 
 export default AdminRoute;

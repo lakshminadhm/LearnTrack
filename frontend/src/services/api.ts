@@ -21,7 +21,8 @@ import {
   PaginatedResponse,
   PaginationParams,
   Concept,
-  AdminConceptUpdate
+  AdminConceptUpdate,
+  AdminConceptCreate
 } from '../../../shared/src/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -574,7 +575,7 @@ export const adminApi = {
     }
   },
 
-  createConcept: async (data: AdminCourseCreate): Promise<ApiResponse<Concept>> => {
+  createConcept: async (data: AdminConceptCreate): Promise<ApiResponse<Concept>> => {
     try {
       const response = await api.post<ApiResponse<Concept>>('/admin/concepts', data);
       return response.data;

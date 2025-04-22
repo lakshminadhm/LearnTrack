@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserRegistration } from '../../../../shared/src/types';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Register: React.FC = () => {
   const [userData, setUserData] = useState<UserRegistration>({

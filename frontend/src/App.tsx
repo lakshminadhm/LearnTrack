@@ -1,5 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
@@ -33,100 +35,103 @@ const Loading = () => (
 
 function App() {
   return (
-    <BrowserRouter>
-      <Layout>
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            
-            {/* Protected routes */}
-            <Route path="/dashboard" element={
-              <PrivateRoute>
-                <DashboardPage />
-              </PrivateRoute>
-            } />
-            <Route path="/logs" element={
-              <PrivateRoute>
-                <LogsPage />
-              </PrivateRoute>
-            } />
-            <Route path="/goals" element={
-              <PrivateRoute>
-                <GoalsPage />
-              </PrivateRoute>
-            } />
-            <Route path="/community" element={
-              <PrivateRoute>
-                <CommunityPage />
-              </PrivateRoute>
-            } />
-            <Route path="/courses" element={
-              <PrivateRoute>
-                <CoursesPage />
-              </PrivateRoute>
-            } />
-            <Route path="/tracks/:trackId" element={
-              <PrivateRoute>
-                <TrackDetailPage />
-              </PrivateRoute>
-            } />
-            <Route path="/courses/:courseId" element={
-              <PrivateRoute>
-                <CourseDetailPage />
-              </PrivateRoute>
-            } />
-            
-            {/* Admin routes */}
-            <Route path="/admin" element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            } />
-            <Route path="/admin/tracks" element={
-              <AdminRoute>
-                <TrackListAdmin />
-              </AdminRoute>
-            } />
-            <Route path="/admin/tracks/new" element={
-              <AdminRoute>
-                <TrackForm />
-              </AdminRoute>
-            } />
-            <Route path="/admin/tracks/edit/:trackId" element={
-              <AdminRoute>
-                <TrackForm />
-              </AdminRoute>
-            } />
-            <Route path="/admin/courses" element={
-              <AdminRoute>
-                <CourseListAdmin />
-              </AdminRoute>
-            } />
-            <Route path="/admin/courses/new" element={
-              <AdminRoute>
-                <CourseForm />
-              </AdminRoute>
-            } />
-            <Route path="/admin/courses/edit/:courseId" element={
-              <AdminRoute>
-                <CourseForm />
-              </AdminRoute>
-            } />
-            <Route path="/admin/concepts" element={
-              <AdminRoute>
-                <ConceptManagerAdmin />
-              </AdminRoute>
-            } />
-            
-            {/* Fallback for unknown routes */}
-            <Route path="*" element={<HomePage />} />
-          </Routes>
-        </Suspense>
-      </Layout>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Layout>
+          <Suspense fallback={<Loading />}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              
+              {/* Protected routes */}
+              <Route path="/dashboard" element={
+                <PrivateRoute>
+                  <DashboardPage />
+                </PrivateRoute>
+              } />
+              <Route path="/logs" element={
+                <PrivateRoute>
+                  <LogsPage />
+                </PrivateRoute>
+              } />
+              <Route path="/goals" element={
+                <PrivateRoute>
+                  <GoalsPage />
+                </PrivateRoute>
+              } />
+              <Route path="/community" element={
+                <PrivateRoute>
+                  <CommunityPage />
+                </PrivateRoute>
+              } />
+              <Route path="/courses" element={
+                <PrivateRoute>
+                  <CoursesPage />
+                </PrivateRoute>
+              } />
+              <Route path="/tracks/:trackId" element={
+                <PrivateRoute>
+                  <TrackDetailPage />
+                </PrivateRoute>
+              } />
+              <Route path="/courses/:courseId" element={
+                <PrivateRoute>
+                  <CourseDetailPage />
+                </PrivateRoute>
+              } />
+              
+              {/* Admin routes */}
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              } />
+              <Route path="/admin/tracks" element={
+                <AdminRoute>
+                  <TrackListAdmin />
+                </AdminRoute>
+              } />
+              <Route path="/admin/tracks/new" element={
+                <AdminRoute>
+                  <TrackForm />
+                </AdminRoute>
+              } />
+              <Route path="/admin/tracks/edit/:trackId" element={
+                <AdminRoute>
+                  <TrackForm />
+                </AdminRoute>
+              } />
+              <Route path="/admin/courses" element={
+                <AdminRoute>
+                  <CourseListAdmin />
+                </AdminRoute>
+              } />
+              <Route path="/admin/courses/new" element={
+                <AdminRoute>
+                  <CourseForm />
+                </AdminRoute>
+              } />
+              <Route path="/admin/courses/edit/:courseId" element={
+                <AdminRoute>
+                  <CourseForm />
+                </AdminRoute>
+              } />
+              <Route path="/admin/concepts" element={
+                <AdminRoute>
+                  <ConceptManagerAdmin />
+                </AdminRoute>
+              } />
+              
+              {/* Fallback for unknown routes */}
+              <Route path="*" element={<HomePage />} />
+            </Routes>
+          </Suspense>
+        </Layout>
+        <Toaster position="top-right" />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

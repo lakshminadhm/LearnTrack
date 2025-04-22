@@ -71,7 +71,7 @@ const ConceptManagerAdmin: React.FC = () => {
       const rootConceptList: Concept[] = [];
       
       concepts.forEach(concept => {
-        conceptMap[concept.id] = { ...concept, children: [] };
+        conceptMap[concept.id] = { ...concept };
       });
       
       concepts.forEach(concept => {
@@ -85,12 +85,21 @@ const ConceptManagerAdmin: React.FC = () => {
         }
       });
       
-      rootConceptList.sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
-      rootConceptList.forEach(concept => {
-        if (concept.children) {
-          concept.children.sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
-        }
-      });
+      // Recursive function to sort concepts at all hierarchy levels
+      const sortConceptsRecursively = (conceptsList: Concept[]) => {
+        // Sort current level
+        conceptsList.sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+        
+        // Recursively sort children
+        conceptsList.forEach(concept => {
+          if (concept.children && concept.children.length > 0) {
+            sortConceptsRecursively(concept.children);
+          }
+        });
+      };
+      
+      // Apply the recursive sorting
+      sortConceptsRecursively(rootConceptList);
       
       setConceptsMap(conceptMap);
       setRootConcepts(rootConceptList);
@@ -111,6 +120,7 @@ const ConceptManagerAdmin: React.FC = () => {
       const response = await adminApi.getConceptsForCourse(selectedCourseId);
       if (response.success && response.data) {
         setConcepts(response.data);
+        console.log('Concepts loaded:', response.data);
       } else {
         setConcepts([]);
         toast.error('No concepts found for this course');
@@ -151,14 +161,65 @@ const ConceptManagerAdmin: React.FC = () => {
     setEditingConcept(concept);
     setParentId(concept.parent_id || null);
     setShowForm(false); // No longer show form at the top for editing
+    setEditingConceptId(concept.id); // Set the concept being edited
+  };
+  
+  // Get siblings of a concept based on its parent_id
+  const getSiblings = (conceptId: string): Concept[] => {
+    const concept = conceptsMap[conceptId];
+    if (!concept) return [];
+    
+    if (!concept.parent_id) {
+      // Root level concepts
+      return rootConcepts.filter(c => c.id !== conceptId);
+    }
+    
+    // Find the parent
+    const parent = conceptsMap[concept.parent_id];
+    if (!parent || !parent.children) return [];
+    
+    // Return siblings (excluding self)
+    return parent.children.filter(c => c.id !== conceptId);
   };
   
   const handleDeleteConcept = async (concept: Concept) => {
     if (window.confirm(`Are you sure you want to delete "${concept.title}"? This will also delete all child concepts.`)) {
       setIsLoading(true);
       try {
+        // First, find all sibling concepts at the same level for reordering
+        const siblingConcepts = concepts.filter(c => 
+          c.parent_id === concept.parent_id && c.id !== concept.id
+        );
+        
+        // Get the deleted concept's order number
+        const deletedOrder = concept.order_number || 0;
+        
+        // Delete the concept
         const response = await adminApi.deleteConcept(concept.id);
+        
         if (response.success) {
+          // If deletion was successful, reorder the remaining sibling concepts
+          // to close the gap in the ordering
+          const conceptsToReorder = siblingConcepts
+            .filter(c => (c.order_number || 0) > deletedOrder)
+            .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+          
+          // Update the order of each affected concept
+          for (const c of conceptsToReorder) {
+            try {
+              await adminApi.updateConcept(c.id, {
+                course_id: c.course_id,
+                title: c.title,
+                description: c.description,
+                parent_id: c.parent_id,
+                resource_links: c.resource_links,
+                order_number: (c.order_number || 0) - 1
+              });
+            } catch (error) {
+              console.error(`Failed to update order for concept ${c.id}`, error);
+            }
+          }
+          
           toast.success('Concept deleted successfully');
           loadConcepts();
         } else {
@@ -199,7 +260,7 @@ const ConceptManagerAdmin: React.FC = () => {
     onSave: handleFormSave,
     onCancel: handleFormCancel,
     rootConcepts,
-    siblingConcepts: []
+    siblingConcepts: editingConceptId ? getSiblings(editingConceptId) : []
   };
   
   return (
@@ -270,13 +331,7 @@ const ConceptManagerAdmin: React.FC = () => {
                   editingConceptId={editingConceptId}
                   onShowAddChild={setAddChildForId}
                   onShowEditForm={setEditingConceptId}
-                  showFormProps={{
-                    courseId: selectedCourseId,
-                    onSave: handleFormSave,
-                    onCancel: handleFormCancel,
-                    rootConcepts: rootConcepts,
-                    siblingConcepts: []
-                  }}
+                  showFormProps={formSharedProps}
                 />
               ))}
             </div>

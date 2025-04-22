@@ -1,3 +1,4 @@
+
 // User interfaces
 export interface User {
   id: string;
@@ -66,32 +67,6 @@ export interface GoalCreate {
   target_date: string;
   technology: string;
   status: GoalStatus;
-}
-
-// Concept interfaces for hierarchical structure
-export interface Concept {
-  id: string;
-  parent_id: string | null;
-  course_id: string;
-  title: string;
-  description: string | null;
-  is_completed: boolean;
-  resource_links: string[] | null;
-  created_at: string;
-  updated_at: string;
-  order_number: number;
-  progress?: UserConceptProgress | null;
-  children?: Concept[]; // For hierarchical structure
-}
-
-export interface UserConceptProgress {
-  id: string;
-  user_id: string;
-  concept_id: string;
-  is_completed: boolean;
-  completed_at: string | null;
-  created_at: string;
-  updated_at: string;
 }
 
 // Course interfaces
@@ -194,6 +169,33 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
+// Concept interfaces
+export interface Concept {
+  id: string;
+  course_id: string;
+  parent_id?: string;
+  title: string;
+  description: string;
+  resource_links?: string[];
+  order_number: number | null;
+  difficulty?: CourseDifficulty;
+  created_at: Date;
+  updated_at: Date;
+  progress?: UserConceptProgress;
+  is_completed?: boolean;
+  children?: Concept[];
+}
+
+export interface UserConceptProgress {
+  id: string;
+  user_id: string;
+  concept_id: string;
+  is_completed: boolean;
+  completed_at: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
 // Admin interfaces
 export interface AdminTrackCreate {
   title: string;
@@ -218,12 +220,13 @@ export interface AdminCourseUpdate extends AdminCourseCreate {
 
 export interface AdminConceptCreate {
   course_id: string;
-  parent_id?: string;
-  name: string;
+  parent_id?: string | null;
+  title: string;
   description?: string;
-  resource_links?: string[];
+  resource_links?: string[];  
+  order_number: number;
+  difficulty?: CourseDifficulty;
 }
 
 export interface AdminConceptUpdate extends AdminConceptCreate {
-  id: string;
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserCredentials } from '../../../../shared/src/types';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Login: React.FC = () => {
   const [credentials, setCredentials] = useState<UserCredentials>({

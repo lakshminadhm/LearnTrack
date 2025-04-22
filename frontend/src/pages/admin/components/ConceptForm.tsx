@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Concept, CourseDifficulty } from '../../../../../shared/src/types';
-import { Save, X } from 'lucide-react';
+import { Save, X, Plus, Trash } from 'lucide-react';
 import { useAdmin } from '../../../hooks/useAdmin';
 import { adminApi } from '../../../services/api';
 import toast from 'react-hot-toast';
@@ -31,7 +31,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
     title: '',
     description: '',
     order_number: 1,
-    resource_link: '',
+    resourceLinks: [''], // Changed to array
     position: 'end' // 'start', 'end', or concept ID
   });
   
@@ -54,11 +54,22 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
   
   useEffect(() => {
     if (concept) {
+      // Handle resource_links as array
+      console.log(concept)
+    let resourceLinks: string[] = [];
+      if (concept.resource_links && Array.isArray(concept.resource_links)) {
+        console.log('concept.resource_links', concept.resource_links);
+        resourceLinks = [...concept.resource_links];
+      }
+      else {
+        resourceLinks = [''];
+      }
+      console.log(resourceLinks)
       setFormData({
         title: concept.title,
         description: concept.description || '',
         order_number: concept.order_number || 1,
-        resource_link: concept.resource_link || '',
+        resourceLinks: resourceLinks,
         position: 'current' // Special value for editing existing concept
       });
     } else if (rootConcepts && rootConcepts.length > 0 && !parentId) {
@@ -86,8 +97,34 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
     setFormData(prev => ({ ...prev, [name]: parsedValue }));
   };
   
+  const handleResourceLinkChange = (index: number, value: string) => {
+    const updatedLinks = [...formData.resourceLinks];
+    updatedLinks[index] = value;
+    setFormData(prev => ({ ...prev, resourceLinks: updatedLinks }));
+  };
+  
+  const addResourceLink = () => {
+    setFormData(prev => ({ 
+      ...prev, 
+      resourceLinks: [...prev.resourceLinks, ''] 
+    }));
+  };
+  
+  const removeResourceLink = (index: number) => {
+    if (formData.resourceLinks.length <= 1) {
+      return; // Keep at least one field
+    }
+    
+    const updatedLinks = [...formData.resourceLinks];
+    updatedLinks.splice(index, 1);
+    setFormData(prev => ({ ...prev, resourceLinks: updatedLinks }));
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Filter out empty resource links
+    const filteredResourceLinks = formData.resourceLinks.filter(link => link.trim() !== '');
     
     try {
       // When editing a concept
@@ -99,18 +136,22 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
         // Only update order if position was changed
         if (formData.position !== 'current' && siblings.length > 0) {
           if (formData.position === 'start') {
-            // Move to start
+            // Moving to the start
             orderNumber = 1;
-            
-            // Update siblings that would be affected
-            const affectedSiblings = siblings.filter(c => 
-              (c.order_number || 0) >= orderNumber && (c.order_number || 0) < originalOrder
-            );
-            
+            // Update other concepts' order
+            const affectedSiblings = siblings
+              .filter(c => (c.order_number || 0) < originalOrder)
+              .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+              
+            // Update affected siblings
             for (const c of affectedSiblings) {
               try {
                 await adminApi.updateConcept(c.id, {
-                  ...c,
+                  course_id: c.course_id,
+                  title: c.title,
+                  description: c.description,
+                  parent_id: c.parent_id,
+                  resource_links: c.resource_links,
                   order_number: (c.order_number || 0) + 1
                 });
               } catch (error) {
@@ -118,29 +159,52 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
               }
             }
           } else if (formData.position === 'end') {
-            // Move to end
-            orderNumber = Math.max(...siblings.map(c => c.order_number || 0)) + 1;
+            // Moving to the end
+            orderNumber = Math.max(...siblings.map(c => c.order_number || 0));
             
-            // No need to update other concepts when moving to the end
+            // When moving to end, decrease order_number of all concepts after the current one by 1
+            // to fill the gap left by the moved concept
+            const conceptsToMoveUp = siblings
+              .filter(c => (c.order_number || 0) > originalOrder)
+              .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+            
+            for (const c of conceptsToMoveUp) {
+              try {
+                await adminApi.updateConcept(c.id, {
+                  course_id: c.course_id,
+                  title: c.title,
+                  description: c.description,
+                  parent_id: c.parent_id,
+                  resource_links: c.resource_links,
+                  order_number: (c.order_number || 0) - 1
+                });
+              } catch (error) {
+                console.error(`Failed to update order for concept ${c.id}`, error);
+              }
+            }
           } else {
-            // Move after a specific concept
-            const afterConcept = siblings.find(c => c.id === formData.position);
-            if (afterConcept) {
-              const afterOrder = afterConcept.order_number || 0;
+            // Moving after a specific sibling
+            const targetConcept = siblings.find(c => c.id === formData.position);
+            if (targetConcept) {
+              const targetOrder = targetConcept.order_number || 0;              
               
-              // If moving forward (to a higher order number)
-              if (afterOrder > originalOrder) {
-                orderNumber = afterOrder;
+              // When moving down the list (e.g., from position 10 to 15)
+              if (targetOrder > originalOrder) {
+                orderNumber = targetOrder;
+                // Move concepts in between the original position and new position up by 1
+                // This fills the gap left by the moved concept (11 becomes 10, 12 becomes 11, etc.)
+                const conceptsToMoveUp = siblings
+                  .filter(c => (c.order_number || 0) > originalOrder && (c.order_number || 0) <= targetOrder)
+                  .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
                 
-                // Update siblings between original position and new position
-                const affectedSiblings = siblings.filter(c => 
-                  (c.order_number || 0) > originalOrder && (c.order_number || 0) <= afterOrder
-                );
-                
-                for (const c of affectedSiblings) {
+                for (const c of conceptsToMoveUp) {
                   try {
                     await adminApi.updateConcept(c.id, {
-                      ...c,
+                      course_id: c.course_id,
+                      title: c.title,
+                      description: c.description,
+                      parent_id: c.parent_id,
+                      resource_links: c.resource_links,
                       order_number: (c.order_number || 0) - 1
                     });
                   } catch (error) {
@@ -148,28 +212,29 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                   }
                 }
               } 
-              // If moving backward (to a lower order number)
-              else if (afterOrder < originalOrder - 1) {
-                orderNumber = afterOrder + 1;
+              // When moving up the list (e.g., from position 15 to 10)
+              else if (targetOrder < originalOrder - 1) {
+                orderNumber = targetOrder+1;
+                // Move concepts in between the target position and original position down by 1
+                // (10 becomes 11, 11 becomes 12, etc.)
+                const conceptsToMoveDown = siblings
+                  .filter(c => (c.order_number || 0) > targetOrder && (c.order_number || 0) < originalOrder)
+                  .sort((a, b) => (b.order_number || 0) - (a.order_number || 0)); // Sort descending to avoid conflicts
                 
-                // Update siblings between new position and original position
-                const affectedSiblings = siblings.filter(c => 
-                  (c.order_number || 0) > afterOrder && (c.order_number || 0) < originalOrder
-                );
-                
-                for (const c of affectedSiblings) {
+                for (const c of conceptsToMoveDown) {
                   try {
                     await adminApi.updateConcept(c.id, {
-                      ...c,
+                      course_id: c.course_id,
+                      title: c.title,
+                      description: c.description,
+                      parent_id: c.parent_id,
+                      resource_links: c.resource_links,
                       order_number: (c.order_number || 0) + 1
                     });
                   } catch (error) {
                     console.error(`Failed to update order for concept ${c.id}`, error);
                   }
                 }
-              } else {
-                // No change needed if position is the same
-                orderNumber = originalOrder;
               }
             }
           }
@@ -180,7 +245,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
           course_id: courseId,
           title: formData.title,
           description: formData.description,
-          resource_link: formData.resource_link,
+          resource_links: filteredResourceLinks, // Send array of links
           order_number: orderNumber
         });
         toast.success('Concept updated successfully');
@@ -193,15 +258,19 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
         
         if (concepts && concepts.length > 0) {
           if (formData.position === 'start') {
-            // Place at beginning
             orderNumber = 1;
-            
-            // Need to update existing concepts with order_number >= 1
-            const conceptsToUpdate = concepts.filter(c => (c.order_number || 0) >= 1);
-            for (const c of conceptsToUpdate) {
+            // Update other concepts' order
+            const affectedConcepts = concepts
+              .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+              
+            for (const c of affectedConcepts) {
               try {
                 await adminApi.updateConcept(c.id, {
-                  ...c,
+                  course_id: c.course_id,
+                  title: c.title,
+                  description: c.description,
+                  parent_id: c.parent_id,
+                  resource_links: c.resource_links,
                   order_number: (c.order_number || 0) + 1
                 });
               } catch (error) {
@@ -209,23 +278,27 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
               }
             }
           } else if (formData.position === 'end') {
-            // Place at end
             orderNumber = Math.max(...concepts.map(c => c.order_number || 0)) + 1;
           } else {
-            // Place after the selected concept
-            const afterConcept = concepts.find(c => c.id === formData.position);
-            if (afterConcept) {
-              orderNumber = (afterConcept.order_number || 0) + 1;
+            // After a specific sibling
+            const targetConcept = concepts.find(c => c.id === formData.position);
+            if (targetConcept) {
+              const targetOrder = targetConcept.order_number || 0;
+              orderNumber = targetOrder + 1;
               
-              // Need to update existing concepts with order_number > afterConcept.order_number
-              const conceptsToUpdate = concepts.filter(c => 
-                (c.order_number || 0) > (afterConcept.order_number || 0)
-              );
-              
-              for (const c of conceptsToUpdate) {
+              // Update order of affected siblings
+              const affectedConcepts = concepts
+                .filter(c => (c.order_number || 0) > targetOrder)
+                .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+                
+              for (const c of affectedConcepts) {
                 try {
                   await adminApi.updateConcept(c.id, {
-                    ...c,
+                    course_id: c.course_id,
+                    title: c.title,
+                    description: c.description,
+                    parent_id: c.parent_id,
+                    resource_links: c.resource_links,
                     order_number: (c.order_number || 0) + 1
                   });
                 } catch (error) {
@@ -239,10 +312,10 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
         // Create the new concept with the calculated order_number
         await adminApi.createConcept({
           course_id: courseId,
-          parent_id: parentId || undefined,
+          parent_id: parentId,
           title: formData.title,
           description: formData.description,
-          resource_link: formData.resource_link,
+          resource_links: filteredResourceLinks, // Send array of links
           order_number: orderNumber,
           difficulty: CourseDifficulty.BEGINNER
         });
@@ -302,7 +375,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
         </div>
         
         <div className="grid grid-cols-2 gap-4 mb-3">
-          {!isEditMode && hasRelevantSiblings ? (
+          {!isEditMode ? (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Position
@@ -315,7 +388,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                 required
               >
                 <option value="start">At the beginning</option>
-                {relevantSiblings.sort((a, b) => (a.order_number || 0) - (b.order_number || 0)).map(c => (
+                {relevantSiblings.sort((a, b) => (a.order_number || 0) - (b.order_number || 0)).slice(0, relevantSiblings.length - 1).map(c => (
                   <option key={c.id} value={c.id}>After "{c.title}"</option>
                 ))}
                 <option value="end">At the end</option>
@@ -326,7 +399,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                  'This concept will be placed after the selected concept.'}
               </p>
             </div>
-          ) : isEditMode && hasRelevantSiblings ? (
+          ) : (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Position
@@ -340,7 +413,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
               >
                 <option value="current">Keep current position</option>
                 <option value="start">Move to beginning</option>
-                {relevantSiblings.sort((a, b) => (a.order_number || 0) - (b.order_number || 0)).map(c => (
+                {relevantSiblings.sort((a, b) => (a.order_number || 0) - (b.order_number || 0)).slice(0, relevantSiblings.length - 1).map(c => (
                   <option key={c.id} value={c.id}>After "{c.title}"</option>
                 ))}
                 <option value="end">Move to end</option>
@@ -352,36 +425,51 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                  'Concept will be moved after the selected concept.'}
               </p>
             </div>
-          ) : (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Order Number
-              </label>
-              <input
-                type="number"
-                name="order_number"
-                value={formData.order_number}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded-md"
-                min="1"
-                required
-              />
-            </div>
           )}
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Resource Link
+          {/* Empty column to balance the grid */}
+          <div></div>
+        </div>
+        
+        {/* Resource Links Section */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Resource Links
             </label>
-            <input
-              type="url"
-              name="resource_link"
-              value={formData.resource_link}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md"
-              placeholder="https://..."
-            />
+            <button
+              type="button"
+              onClick={addResourceLink}
+              className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
+            >
+              <Plus size={16} className="mr-1" />
+              Add Link
+            </button>
           </div>
+          
+          {formData.resourceLinks.map((link, index) => (
+            <div key={index} className="flex items-center mb-2">
+              <input
+                type="url"
+                value={link}
+                onChange={(e) => handleResourceLinkChange(index, e.target.value)}
+                className="flex-grow px-3 py-2 border rounded-md"
+                placeholder="https://..."
+              />
+              <button
+                type="button"
+                onClick={() => removeResourceLink(index)}
+                className="ml-2 text-red-500 hover:text-red-700 p-1"
+                disabled={formData.resourceLinks.length <= 1}
+                title="Remove link"
+              >
+                <Trash size={16} />
+              </button>
+            </div>
+          ))}
+          <p className="mt-1 text-xs text-gray-500">
+            Add links to helpful resources, tutorials, or documentation
+          </p>
         </div>
         
         <div className="flex justify-end space-x-2">
