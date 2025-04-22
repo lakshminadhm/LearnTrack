@@ -96,7 +96,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
       if (success) {
         // Update local state to show completion immediately
         setLocalIsCompleted(true);
-        console.log(`Auto-completed parent concept: ${concept.name}`);
+        console.log(`Auto-completed parent concept: ${concept.title}`);
         
         // Notify parent component that this concept has been completed
         if (onChildComplete) {
@@ -187,7 +187,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
         >
           <div className="flex items-center">
             <span className={`font-medium transition-colors ${isCompleted ? 'text-green-800' : 'text-gray-800'}`}>
-              {concept.name}
+              {concept.title}
             </span>
             
             {hasResources && (

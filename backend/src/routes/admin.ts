@@ -338,7 +338,7 @@ router.get('/courses/:id/concepts', [
     // Get all concepts for the course
     const { data, error } = await supabase
       .from('concepts')
-      .select('id, parent_id, course_id, name, description, resource_links, created_at, updated_at, sequence_number')
+      .select('id, parent_id, course_id, title, description, resource_links, created_at, updated_at, sequence_number')
       .eq('course_id', id);
 
     if (error) {
@@ -354,7 +354,7 @@ router.get('/courses/:id/concepts', [
       id: concept.id,
       parent_id: concept.parent_id,
       course_id: concept.course_id,
-      title: concept.name,  // Map name to title
+      title: concept.title,  // Map title to title
       description: concept.description,
       resource_links: concept.resource_links,
       sequence_number: concept.sequence_number || 1, // Default order number
@@ -391,7 +391,7 @@ router.post('/concepts', [
     // Transform the data to match the database schema
     const conceptData = {
       course_id,
-      name: title, // Map title to name
+      title: title, // Map title to title
       description,
       parent_id: parent_id || null,
       sequence_number: sequence_number,
@@ -417,7 +417,7 @@ router.post('/concepts', [
       id: data.id,
       parent_id: data.parent_id,
       course_id: data.course_id,
-      title: data.name,
+      title: data.title,
       description: data.description,
       resource_links: data.resource_links,
       sequence_number: data.sequence_number || 1,
@@ -454,7 +454,7 @@ router.put('/concepts/:id', [
     // Transform the data to match the database schema
     const conceptData = {
       course_id,
-      name: title, // Map title to name
+      title: title, // Map title to title
       description: description,
       sequence_number: sequence_number,
       resource_links: resource_links // Convert single link to array
@@ -480,7 +480,7 @@ router.put('/concepts/:id', [
       id: data.id,
       parent_id: data.parent_id,
       course_id: data.course_id,
-      title: data.name,
+      title: data.title,
       description: data.description,
       resource_links: data.resource_links,
       sequence_number: data.sequence_number || 1,

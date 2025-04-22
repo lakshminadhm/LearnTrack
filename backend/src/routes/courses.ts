@@ -543,13 +543,13 @@ router.post('/concepts/:id/complete', [
 // Create a new concept
 router.post('/concepts', [
   body('courseId').isUUID().withMessage('Invalid course ID'),
-  body('name').isString().notEmpty().withMessage('Concept name is required'),
+  body('title').isString().notEmpty().withMessage('Concept title is required'),
   body('description').optional().isString(),
   body('parentId').optional().isUUID().withMessage('Invalid parent concept ID'),
   body('resourceLinks').optional().isArray()
 ], async (req: any, res: express.Response) => {
   try {
-    const { courseId, name, description, parentId, resourceLinks } = req.body;
+    const { courseId, title, description, parentId, resourceLinks } = req.body;
 
     // Create new concept
     const { data, error } = await supabase
@@ -557,7 +557,7 @@ router.post('/concepts', [
       .insert([{
         course_id: courseId,
         parent_id: parentId || null,
-        name,
+        title,
         description,
         resource_links: resourceLinks || []
       }])

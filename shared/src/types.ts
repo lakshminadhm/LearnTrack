@@ -174,7 +174,7 @@ export interface Concept {
   id: string;
   course_id: string;
   parent_id?: string;
-  name: string;
+  title: string;
   description: string;
   resource_links?: string[];
   sequence_number: number | null;

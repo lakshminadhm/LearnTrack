@@ -14,7 +14,7 @@ interface ConceptTreeProps {
   fetchConceptChildren: (conceptId: string) => Promise<Concept[]>;
   createConcept?: (data: {
     courseId: string;
-    name: string;
+    title: string;
     description?: string;
     parentId?: string;
     resourceLinks?: string[];
@@ -23,7 +23,7 @@ interface ConceptTreeProps {
 }
 
 interface ConceptFormData {
-  name: string;
+  title: string;
   description: string;
   parentId: string;
   resourceLinks: string;
@@ -48,7 +48,7 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
   
   const { control, handleSubmit, reset, formState: { errors } } = useForm<ConceptFormData>({
     defaultValues: {
-      name: '',
+      title: '',
       description: '',
       parentId: '',
       resourceLinks: ''
@@ -179,7 +179,7 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
 
       const result = await createConcept({
         courseId,
-        name: data.name,
+        title: data.title,
         description: data.description || undefined,
         parentId: data.parentId || undefined,
         resourceLinks: resourceLinks.length > 0 ? resourceLinks : undefined
@@ -240,7 +240,7 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
         <option value={concept.id}>
           {Array(depth).fill('\u00A0\u00A0').join('')}
           {depth > 0 && '└─ '}
-          {concept.name}
+          {concept.title}
         </option>
         {concept.children && concept.children.length > 0 && 
           renderConceptOptions(concept.children, depth + 1)}
@@ -294,25 +294,25 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name <span className="text-red-500">*</span>
+                Title <span className="text-red-500">*</span>
               </label>
               <Controller
-                name="name"
+                name="title"
                 control={control}
-                rules={{ required: "Name is required" }}
+                rules={{ required: "Title is required" }}
                 render={({ field }) => (
                   <input
                     {...field}
                     type="text"
-                    className={`w-full px-4 py-2.5 border ${errors.name ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200`}
-                    placeholder="Enter concept name"
+                    className={`w-full px-4 py-2.5 border ${errors.title ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200`}
+                    placeholder="Enter concept title"
                   />
                 )}
               />
-              {errors.name && (
+              {errors.title && (
                 <p className="mt-1.5 text-sm text-red-600 flex items-center">
                   <AlertCircle className="w-3.5 h-3.5 mr-1" />
-                  {errors.name.message}
+                  {errors.title.message}
                 </p>
               )}
             </div>
