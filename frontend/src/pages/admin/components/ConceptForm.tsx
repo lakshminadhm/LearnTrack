@@ -30,7 +30,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    order_number: 1,
+    sequence_number: 1,
     resourceLinks: [''], // Changed to array
     position: 'end' // 'start', 'end', or concept ID
   });
@@ -68,7 +68,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
       setFormData({
         title: concept.title,
         description: concept.description || '',
-        order_number: concept.order_number || 1,
+        sequence_number: concept.sequence_number || 1,
         resourceLinks: resourceLinks,
         position: 'current' // Special value for editing existing concept
       });
@@ -76,14 +76,14 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
       // Default to end position for new root
       setFormData(prev => ({ 
         ...prev, 
-        order_number: Math.max(...rootConcepts.map(c => c.order_number || 0)) + 1,
+        sequence_number: Math.max(...rootConcepts.map(c => c.sequence_number || 0)) + 1,
         position: 'end'
       }));
     } else if (siblingConcepts && siblingConcepts.length > 0 && parentId) {
       // Default to end position for new child
       setFormData(prev => ({ 
         ...prev, 
-        order_number: Math.max(...siblingConcepts.map(c => c.order_number || 0)) + 1,
+        sequence_number: Math.max(...siblingConcepts.map(c => c.sequence_number || 0)) + 1,
         position: 'end'
       }));
     }
@@ -93,7 +93,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    const parsedValue = name === 'order_number' ? parseInt(value) : value;
+    const parsedValue = name === 'sequence_number' ? parseInt(value) : value;
     setFormData(prev => ({ ...prev, [name]: parsedValue }));
   };
   
@@ -129,19 +129,19 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
     try {
       // When editing a concept
       if (isEditMode && concept) {
-        let orderNumber = formData.order_number;
-        const originalOrder = concept.order_number || 1;
+        let sequenceNumber = formData.sequence_number;
+        const originalOrder = concept.sequence_number || 1;
         const siblings = getSiblings();
         
         // Only update order if position was changed
         if (formData.position !== 'current' && siblings.length > 0) {
           if (formData.position === 'start') {
             // Moving to the start
-            orderNumber = 1;
+            sequenceNumber = 1;
             // Update other concepts' order
             const affectedSiblings = siblings
-              .filter(c => (c.order_number || 0) < originalOrder)
-              .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+              .filter(c => (c.sequence_number || 0) < originalOrder)
+              .sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
               
             // Update affected siblings
             for (const c of affectedSiblings) {
@@ -152,7 +152,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                   description: c.description,
                   parent_id: c.parent_id,
                   resource_links: c.resource_links,
-                  order_number: (c.order_number || 0) + 1
+                  sequence_number: (c.sequence_number || 0) + 1
                 });
               } catch (error) {
                 console.error(`Failed to update order for concept ${c.id}`, error);
@@ -160,13 +160,13 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
             }
           } else if (formData.position === 'end') {
             // Moving to the end
-            orderNumber = Math.max(...siblings.map(c => c.order_number || 0));
+            sequenceNumber = Math.max(...siblings.map(c => c.sequence_number || 0));
             
-            // When moving to end, decrease order_number of all concepts after the current one by 1
+            // When moving to end, decrease sequence_number of all concepts after the current one by 1
             // to fill the gap left by the moved concept
             const conceptsToMoveUp = siblings
-              .filter(c => (c.order_number || 0) > originalOrder)
-              .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+              .filter(c => (c.sequence_number || 0) > originalOrder)
+              .sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
             
             for (const c of conceptsToMoveUp) {
               try {
@@ -176,7 +176,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                   description: c.description,
                   parent_id: c.parent_id,
                   resource_links: c.resource_links,
-                  order_number: (c.order_number || 0) - 1
+                  sequence_number: (c.sequence_number || 0) - 1
                 });
               } catch (error) {
                 console.error(`Failed to update order for concept ${c.id}`, error);
@@ -186,16 +186,16 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
             // Moving after a specific sibling
             const targetConcept = siblings.find(c => c.id === formData.position);
             if (targetConcept) {
-              const targetOrder = targetConcept.order_number || 0;              
+              const targetOrder = targetConcept.sequence_number || 0;              
               
               // When moving down the list (e.g., from position 10 to 15)
               if (targetOrder > originalOrder) {
-                orderNumber = targetOrder;
+                sequenceNumber = targetOrder;
                 // Move concepts in between the original position and new position up by 1
                 // This fills the gap left by the moved concept (11 becomes 10, 12 becomes 11, etc.)
                 const conceptsToMoveUp = siblings
-                  .filter(c => (c.order_number || 0) > originalOrder && (c.order_number || 0) <= targetOrder)
-                  .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+                  .filter(c => (c.sequence_number || 0) > originalOrder && (c.sequence_number || 0) <= targetOrder)
+                  .sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
                 
                 for (const c of conceptsToMoveUp) {
                   try {
@@ -205,7 +205,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                       description: c.description,
                       parent_id: c.parent_id,
                       resource_links: c.resource_links,
-                      order_number: (c.order_number || 0) - 1
+                      sequence_number: (c.sequence_number || 0) - 1
                     });
                   } catch (error) {
                     console.error(`Failed to update order for concept ${c.id}`, error);
@@ -214,12 +214,12 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
               } 
               // When moving up the list (e.g., from position 15 to 10)
               else if (targetOrder < originalOrder - 1) {
-                orderNumber = targetOrder+1;
+                sequenceNumber = targetOrder+1;
                 // Move concepts in between the target position and original position down by 1
                 // (10 becomes 11, 11 becomes 12, etc.)
                 const conceptsToMoveDown = siblings
-                  .filter(c => (c.order_number || 0) > targetOrder && (c.order_number || 0) < originalOrder)
-                  .sort((a, b) => (b.order_number || 0) - (a.order_number || 0)); // Sort descending to avoid conflicts
+                  .filter(c => (c.sequence_number || 0) > targetOrder && (c.sequence_number || 0) < originalOrder)
+                  .sort((a, b) => (b.sequence_number || 0) - (a.sequence_number || 0)); // Sort descending to avoid conflicts
                 
                 for (const c of conceptsToMoveDown) {
                   try {
@@ -229,7 +229,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                       description: c.description,
                       parent_id: c.parent_id,
                       resource_links: c.resource_links,
-                      order_number: (c.order_number || 0) + 1
+                      sequence_number: (c.sequence_number || 0) + 1
                     });
                   } catch (error) {
                     console.error(`Failed to update order for concept ${c.id}`, error);
@@ -240,28 +240,28 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
           }
         }
         
-        // Update the concept with possibly modified order_number
+        // Update the concept with possibly modified sequence_number
         await adminApi.updateConcept(concept.id, {
           course_id: courseId,
           title: formData.title,
           description: formData.description,
           resource_links: filteredResourceLinks, // Send array of links
-          order_number: orderNumber
+          sequence_number: sequenceNumber
         });
         toast.success('Concept updated successfully');
       } 
       // When adding a new concept
       else {
-        // Calculate the order_number based on the selected position
-        let orderNumber = formData.order_number;
+        // Calculate the sequence_number based on the selected position
+        let sequenceNumber = formData.sequence_number;
         const concepts = !parentId ? rootConcepts : siblingConcepts;
         
         if (concepts && concepts.length > 0) {
           if (formData.position === 'start') {
-            orderNumber = 1;
+            sequenceNumber = 1;
             // Update other concepts' order
             const affectedConcepts = concepts
-              .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+              .sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
               
             for (const c of affectedConcepts) {
               try {
@@ -271,25 +271,25 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                   description: c.description,
                   parent_id: c.parent_id,
                   resource_links: c.resource_links,
-                  order_number: (c.order_number || 0) + 1
+                  sequence_number: (c.sequence_number || 0) + 1
                 });
               } catch (error) {
                 console.error(`Failed to update order for concept ${c.id}`, error);
               }
             }
           } else if (formData.position === 'end') {
-            orderNumber = Math.max(...concepts.map(c => c.order_number || 0)) + 1;
+            sequenceNumber = Math.max(...concepts.map(c => c.sequence_number || 0)) + 1;
           } else {
             // After a specific sibling
             const targetConcept = concepts.find(c => c.id === formData.position);
             if (targetConcept) {
-              const targetOrder = targetConcept.order_number || 0;
-              orderNumber = targetOrder + 1;
+              const targetOrder = targetConcept.sequence_number || 0;
+              sequenceNumber = targetOrder + 1;
               
               // Update order of affected siblings
               const affectedConcepts = concepts
-                .filter(c => (c.order_number || 0) > targetOrder)
-                .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+                .filter(c => (c.sequence_number || 0) > targetOrder)
+                .sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
                 
               for (const c of affectedConcepts) {
                 try {
@@ -299,7 +299,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                     description: c.description,
                     parent_id: c.parent_id,
                     resource_links: c.resource_links,
-                    order_number: (c.order_number || 0) + 1
+                    sequence_number: (c.sequence_number || 0) + 1
                   });
                 } catch (error) {
                   console.error(`Failed to update order for concept ${c.id}`, error);
@@ -309,14 +309,14 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
           }
         }
         
-        // Create the new concept with the calculated order_number
+        // Create the new concept with the calculated sequence_number
         await adminApi.createConcept({
           course_id: courseId,
           parent_id: parentId,
           title: formData.title,
           description: formData.description,
           resource_links: filteredResourceLinks, // Send array of links
-          order_number: orderNumber,
+          sequence_number: sequenceNumber,
           difficulty: CourseDifficulty.BEGINNER
         });
         toast.success('Concept created successfully');
@@ -388,7 +388,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
                 required
               >
                 <option value="start">At the beginning</option>
-                {relevantSiblings.sort((a, b) => (a.order_number || 0) - (b.order_number || 0)).slice(0, relevantSiblings.length - 1).map(c => (
+                {relevantSiblings.sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0)).slice(0, relevantSiblings.length - 1).map(c => (
                   <option key={c.id} value={c.id}>After "{c.title}"</option>
                 ))}
                 <option value="end">At the end</option>
@@ -413,7 +413,7 @@ export const ConceptForm: React.FC<ConceptFormProps> = ({
               >
                 <option value="current">Keep current position</option>
                 <option value="start">Move to beginning</option>
-                {relevantSiblings.sort((a, b) => (a.order_number || 0) - (b.order_number || 0)).slice(0, relevantSiblings.length - 1).map(c => (
+                {relevantSiblings.sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0)).slice(0, relevantSiblings.length - 1).map(c => (
                   <option key={c.id} value={c.id}>After "{c.title}"</option>
                 ))}
                 <option value="end">Move to end</option>

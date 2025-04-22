@@ -27,7 +27,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
   const [progressPercentage, setProgressPercentage] = useState<number>(0);
   const [localIsCompleted, setLocalIsCompleted] = useState(concept.progress?.is_completed || concept.is_completed || false);
   
-  const hasChildren = childConcepts.length > 0 || concept.children?.length > 0;
+  const hasChildren = childConcepts.length > 0 || (concept.children?.length ?? 0) > 0;
   const isCompleted = localIsCompleted;
   const hasResources = concept.resource_links && concept.resource_links.length > 0;
   
@@ -252,7 +252,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
             Learning Resources
           </div>
           <ul className="space-y-1">
-            {concept.resource_links.map((link, index) => (
+            {(concept.resource_links ?? []).map((link, index) => (
               <li key={index} className="flex items-center">
                 <Link2 className="h-3 w-3 text-indigo-400 mr-2" />
                 <a 

@@ -88,7 +88,7 @@ const ConceptManagerAdmin: React.FC = () => {
       // Recursive function to sort concepts at all hierarchy levels
       const sortConceptsRecursively = (conceptsList: Concept[]) => {
         // Sort current level
-        conceptsList.sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+        conceptsList.sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
         
         // Recursively sort children
         conceptsList.forEach(concept => {
@@ -192,7 +192,7 @@ const ConceptManagerAdmin: React.FC = () => {
         );
         
         // Get the deleted concept's order number
-        const deletedOrder = concept.order_number || 0;
+        const deletedOrder = concept.sequence_number || 0;
         
         // Delete the concept
         const response = await adminApi.deleteConcept(concept.id);
@@ -201,8 +201,8 @@ const ConceptManagerAdmin: React.FC = () => {
           // If deletion was successful, reorder the remaining sibling concepts
           // to close the gap in the ordering
           const conceptsToReorder = siblingConcepts
-            .filter(c => (c.order_number || 0) > deletedOrder)
-            .sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+            .filter(c => (c.sequence_number || 0) > deletedOrder)
+            .sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
           
           // Update the order of each affected concept
           for (const c of conceptsToReorder) {
@@ -213,7 +213,7 @@ const ConceptManagerAdmin: React.FC = () => {
                 description: c.description,
                 parent_id: c.parent_id,
                 resource_links: c.resource_links,
-                order_number: (c.order_number || 0) - 1
+                sequence_number: (c.sequence_number || 0) - 1
               });
             } catch (error) {
               console.error(`Failed to update order for concept ${c.id}`, error);

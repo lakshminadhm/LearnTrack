@@ -357,7 +357,7 @@ router.get('/courses/:id/concepts', [
       title: concept.name,  // Map name to title
       description: concept.description,
       resource_links: concept.resource_links,
-      order_number: concept.sequence_number || 1, // Default order number
+      sequence_number: concept.sequence_number || 1, // Default order number
       created_at: concept.created_at,
       updated_at: concept.updated_at
     }));
@@ -382,10 +382,10 @@ router.post('/concepts', [
   body('parent_id').optional().isUUID().withMessage('Parent ID must be a valid UUID'),
   body('description').optional(),
   body('resource_links').optional().isURL().withMessage('Valid URL is required'),
-  body('order_number').optional().isInt({ min: 1 }).withMessage('Valid order number is required')
+  body('sequence_number').optional().isInt({ min: 1 }).withMessage('Valid order number is required')
 ], async (req: express.Request, res: express.Response) => {
   try {
-    const { course_id, title, description, resource_links, order_number, parent_id } = req.body;
+    const { course_id, title, description, resource_links, sequence_number, parent_id } = req.body;
     console.log('Creating concept with data:', req.body);
 
     // Transform the data to match the database schema
@@ -394,7 +394,7 @@ router.post('/concepts', [
       name: title, // Map title to name
       description,
       parent_id: parent_id || null,
-      sequence_number: order_number,
+      sequence_number: sequence_number,
       resource_links: resource_links // Convert single link to array
     };
 
@@ -420,7 +420,7 @@ router.post('/concepts', [
       title: data.name,
       description: data.description,
       resource_links: data.resource_links,
-      order_number: data.sequence_number || 1,
+      sequence_number: data.sequence_number || 1,
       created_at: data.created_at,
       updated_at: data.updated_at
     };
@@ -445,18 +445,18 @@ router.put('/concepts/:id', [
   body('title').notEmpty().withMessage('Title is required'),
   body('description').optional(),
   body('resource_links').optional().isURL().withMessage('Valid URL is required'),
-  body('order_number').optional().isInt({ min: 1 }).withMessage('Valid order number is required')
+  body('sequence_number').optional().isInt({ min: 1 }).withMessage('Valid order number is required')
 ], async (req: express.Request, res: express.Response) => {
   try {
     const { id } = req.params;
-    const { course_id, title, description, resource_links, order_number } = req.body;
+    const { course_id, title, description, resource_links, sequence_number } = req.body;
 
     // Transform the data to match the database schema
     const conceptData = {
       course_id,
       name: title, // Map title to name
       description: description,
-      sequence_number: order_number,
+      sequence_number: sequence_number,
       resource_links: resource_links // Convert single link to array
     };
 
@@ -483,7 +483,7 @@ router.put('/concepts/:id', [
       title: data.name,
       description: data.description,
       resource_links: data.resource_links,
-      order_number: data.sequence_number || 1,
+      sequence_number: data.sequence_number || 1,
       created_at: data.created_at,
       updated_at: data.updated_at
     };

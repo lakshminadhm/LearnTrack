@@ -61,9 +61,9 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
     try {
       const loadedConcepts = await fetchConceptTree(courseId);
       
-      // Recursively sort concepts by order_number
+      // Recursively sort concepts by sequence_number
       const sortConceptsRecursively = (conceptsList: Concept[]): Concept[] => {
-        // Sort current level by order_number
+        // Sort current level by sequence_number
         const sortedConcepts = [...conceptsList].sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
         
         // Recursively sort children

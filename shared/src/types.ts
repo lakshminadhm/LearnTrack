@@ -174,10 +174,10 @@ export interface Concept {
   id: string;
   course_id: string;
   parent_id?: string;
-  title: string;
+  name: string;
   description: string;
   resource_links?: string[];
-  order_number: number | null;
+  sequence_number: number | null;
   difficulty?: CourseDifficulty;
   created_at: Date;
   updated_at: Date;
@@ -224,7 +224,7 @@ export interface AdminConceptCreate {
   title: string;
   description?: string;
   resource_links?: string[];  
-  order_number: number;
+  sequence_number: number;
   difficulty?: CourseDifficulty;
 }
 
