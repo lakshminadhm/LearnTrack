@@ -14,6 +14,13 @@ interface ConceptItemProps {
   onAddChild: (parentId: string) => void;
   expanded: Record<string, boolean>;
   toggleExpand: (id: string) => void;
+  addChildForId: string | null;
+  onShowAddChild: (conceptId: string) => void;
+  showFormProps: {
+    courseId: string;
+    onSave: () => void;
+    onCancel: () => void;
+  };
 }
 
 const ConceptItem: React.FC<ConceptItemProps> = ({ 
@@ -23,10 +30,12 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
   onDelete,
   onAddChild,
   expanded,
-  toggleExpand 
+  toggleExpand,
+  addChildForId,
+  onShowAddChild,
+  showFormProps
 }) => {
   const hasChildren = concept.children && concept.children.length > 0;
-  
   return (
     <div className="mb-2">
       <div 
@@ -44,17 +53,15 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
               <ChevronRight className="w-4 h-4 text-gray-500" />
             )
           ) : (
-            <div className="w-4 h-4"></div> // Empty space for alignment
+            <div className="w-4 h-4"></div>
           )}
         </div>
-        
         <div className="flex-grow font-medium" onClick={() => hasChildren && toggleExpand(concept.id)}>
           {concept.title}
         </div>
-        
         <div className="flex space-x-2">
           <button 
-            onClick={() => onAddChild(concept.id)}
+            onClick={() => onShowAddChild(concept.id)}
             className="p-1 text-green-600 hover:bg-green-100 rounded"
             title="Add child concept"
           >
@@ -76,7 +83,17 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
           </button>
         </div>
       </div>
-      
+      {addChildForId === concept.id && (
+        <div className="ml-8">
+          <ConceptForm
+            concept={null}
+            courseId={showFormProps.courseId}
+            parentId={concept.id}
+            onSave={showFormProps.onSave}
+            onCancel={() => onShowAddChild(null)}
+          />
+        </div>
+      )}
       {hasChildren && expanded[concept.id] && (
         <div className="ml-4">
           {concept.children!.map(child => (
@@ -89,6 +106,9 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
               onAddChild={onAddChild}
               expanded={expanded}
               toggleExpand={toggleExpand}
+              addChildForId={addChildForId}
+              onShowAddChild={onShowAddChild}
+              showFormProps={showFormProps}
             />
           ))}
         </div>
@@ -146,7 +166,6 @@ const ConceptForm: React.FC<ConceptFormProps> = ({
     
     try {
       if (isEditMode && concept) {
-        // Update existing concept
         await adminApi.updateConcept(concept.id, {
           course_id: courseId,
           title: formData.title,
@@ -156,7 +175,6 @@ const ConceptForm: React.FC<ConceptFormProps> = ({
         });
         toast.success('Concept updated successfully');
       } else {
-        // Create new concept
         await adminApi.createConcept({
           course_id: courseId,
           parent_id: parentId || undefined,
@@ -164,7 +182,7 @@ const ConceptForm: React.FC<ConceptFormProps> = ({
           description: formData.description,
           resource_link: formData.resource_link,
           order_number: formData.order_number as number,
-          difficulty: CourseDifficulty.BEGINNER // Default difficulty
+          difficulty: CourseDifficulty.BEGINNER
         });
         toast.success('Concept created successfully');
       }
@@ -280,13 +298,12 @@ const ConceptManagerAdmin: React.FC = () => {
   const [rootConcepts, setRootConcepts] = useState<Concept[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [addChildForId, setAddChildForId] = useState<string | null>(null);
   
-  // For editing/adding
   const [editingConcept, setEditingConcept] = useState<Concept | null>(null);
   const [parentId, setParentId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   
-  // Handle track selection
   useEffect(() => {
     if (selectedTrackId) {
       const loadCourses = async () => {
@@ -319,7 +336,6 @@ const ConceptManagerAdmin: React.FC = () => {
     }
   }, [selectedTrackId]);
   
-  // Handle course selection
   useEffect(() => {
     if (selectedCourseId) {
       loadConcepts();
@@ -328,18 +344,15 @@ const ConceptManagerAdmin: React.FC = () => {
     }
   }, [selectedCourseId]);
   
-  // Process concepts to create hierarchy
   useEffect(() => {
     if (concepts.length > 0) {
       const conceptMap: Record<string, Concept> = {};
       const rootConceptList: Concept[] = [];
       
-      // First pass: create a map of all concepts
       concepts.forEach(concept => {
         conceptMap[concept.id] = { ...concept, children: [] };
       });
       
-      // Second pass: establish parent-child relationships
       concepts.forEach(concept => {
         if (concept.parent_id && conceptMap[concept.parent_id]) {
           if (!conceptMap[concept.parent_id].children) {
@@ -351,7 +364,6 @@ const ConceptManagerAdmin: React.FC = () => {
         }
       });
       
-      // Sort by order_number
       rootConceptList.sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
       rootConceptList.forEach(concept => {
         if (concept.children) {
@@ -362,7 +374,6 @@ const ConceptManagerAdmin: React.FC = () => {
       setConceptsMap(conceptMap);
       setRootConcepts(rootConceptList);
       
-      // Expand all by default
       const allExpanded: Record<string, boolean> = {};
       concepts.forEach(concept => {
         allExpanded[concept.id] = true;
@@ -403,18 +414,21 @@ const ConceptManagerAdmin: React.FC = () => {
     setEditingConcept(null);
     setParentId(null);
     setShowForm(true);
+    setAddChildForId(null);
   };
   
   const handleAddChildConcept = (parentConceptId: string) => {
     setEditingConcept(null);
     setParentId(parentConceptId);
-    setShowForm(true);
+    setShowForm(false);
+    setAddChildForId(parentConceptId);
   };
   
   const handleEditConcept = (concept: Concept) => {
     setEditingConcept(concept);
     setParentId(concept.parent_id || null);
     setShowForm(true);
+    setAddChildForId(null);
   };
   
   const handleDeleteConcept = async (concept: Concept) => {
@@ -446,12 +460,14 @@ const ConceptManagerAdmin: React.FC = () => {
     setShowForm(false);
     setEditingConcept(null);
     setParentId(null);
+    setAddChildForId(null);
   };
   
   const handleFormCancel = () => {
     setShowForm(false);
     setEditingConcept(null);
     setParentId(null);
+    setAddChildForId(null);
   };
   
   return (
@@ -544,6 +560,13 @@ const ConceptManagerAdmin: React.FC = () => {
                   onAddChild={handleAddChildConcept}
                   expanded={expanded}
                   toggleExpand={toggleExpand}
+                  addChildForId={addChildForId}
+                  onShowAddChild={setAddChildForId}
+                  showFormProps={{
+                    courseId: selectedCourseId,
+                    onSave: handleFormSave,
+                    onCancel: handleFormCancel
+                  }}
                 />
               ))}
             </div>
