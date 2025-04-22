@@ -19,6 +19,7 @@ interface ConceptTreeProps {
     parentId?: string;
     resourceLinks?: string[];
   }) => Promise<Concept | null>;
+  onProgressUpdate?: (progress: number) => void; // New prop to notify parent about progress changes
 }
 
 interface ConceptFormData {
@@ -34,7 +35,8 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
   fetchConceptTree,
   completeConcept,
   fetchConceptChildren,
-  createConcept
+  createConcept,
+  onProgressUpdate
 }) => {
   const [concepts, setConcepts] = useState<Concept[]>(initialConcepts || []);
   const [isLoading, setIsLoading] = useState<boolean>(!initialConcepts);
@@ -73,11 +75,75 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
     }
   }, [courseId, initialConcepts, loadConcepts]);
 
+  // Calculate and update total course progress
+  useEffect(() => {
+    if (concepts.length > 0 && onProgressUpdate) {
+      // Function to count all concepts and completed concepts
+      const countAllConcepts = (conceptsList: Concept[]): { total: number, completed: number } => {
+        let total = 0;
+        let completed = 0;
+        
+        const processConcept = (concept: Concept) => {
+          total++;
+          if (concept.progress?.is_completed || concept.is_completed) {
+            completed++;
+          }
+          
+          // Process children recursively
+          if (concept.children && concept.children.length > 0) {
+            concept.children.forEach(processConcept);
+          }
+        };
+        
+        // Process all top-level concepts
+        conceptsList.forEach(processConcept);
+        
+        return { total, completed };
+      };
+      
+      const counts = countAllConcepts(concepts);
+      const progressPercentage = counts.total > 0 
+        ? Math.round((counts.completed / counts.total) * 100) 
+        : 0;
+      
+      // Notify parent component about the updated progress
+      onProgressUpdate(progressPercentage);
+    }
+  }, [concepts, onProgressUpdate]);
+
   const handleComplete = async (conceptId: string) => {
     try {
       const success = await completeConcept(conceptId);
-      // Optionally refresh the tree to ensure all data is in sync
+      
+      // If completion was successful, update the tree to reflect changes in parent progress
       if (success) {
+        // Find the concept and mark it as completed
+        const updateConceptTreeCompletionStatus = (
+          concepts: Concept[],
+          targetId: string
+        ): Concept[] => {
+          return concepts.map(concept => {
+            if (concept.id === targetId) {
+              // Mark this concept as completed
+              return {
+                ...concept,
+                is_completed: true,
+                progress: concept.progress 
+                  ? { ...concept.progress, is_completed: true }
+                  : { id: '', user_id: '', concept_id: concept.id, is_completed: true, completed_at: new Date(), created_at: new Date(), updated_at: new Date() }
+              };
+            } else if (concept.children && concept.children.length > 0) {
+              // Check children recursively
+              return {
+                ...concept,
+                children: updateConceptTreeCompletionStatus(concept.children, targetId)
+              };
+            }
+            return concept;
+          });
+        };
+        
+        setConcepts(prevConcepts => updateConceptTreeCompletionStatus(prevConcepts, conceptId));
         return true;
       }
       return false;
@@ -379,6 +445,36 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
                 concept={concept}
                 onComplete={handleComplete}
                 onLoadChildren={fetchConceptChildren}
+                onChildComplete={(childId) => {
+                  // This handles a child completion notification in the root concepts
+                  // We need to update our concepts state to reflect this change
+                  setConcepts(prevConcepts => {
+                    // Create a recursive function to update the completion status in the tree
+                    const updateChildCompletion = (concepts: Concept[], childId: string): Concept[] => {
+                      return concepts.map(concept => {
+                        if (concept.id === childId) {
+                          // Found the child, mark it as completed
+                          return {
+                            ...concept,
+                            is_completed: true,
+                            progress: concept.progress 
+                              ? { ...concept.progress, is_completed: true }
+                              : { id: '', user_id: '', concept_id: concept.id, is_completed: true, completed_at: new Date(), created_at: new Date(), updated_at: new Date() }
+                          };
+                        } else if (concept.children && concept.children.length > 0) {
+                          // Otherwise check in children recursively
+                          return {
+                            ...concept,
+                            children: updateChildCompletion(concept.children, childId)
+                          };
+                        }
+                        return concept;
+                      });
+                    };
+                    
+                    return updateChildCompletion(prevConcepts, childId);
+                  });
+                }}
               />
             ))}
           </div>
