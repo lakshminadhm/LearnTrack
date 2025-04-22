@@ -73,12 +73,13 @@ export interface Concept {
   id: string;
   parent_id: string | null;
   course_id: string;
-  name: string;
+  title: string;
   description: string | null;
   is_completed: boolean;
   resource_links: string[] | null;
   created_at: string;
   updated_at: string;
+  order_number: number;
   progress?: UserConceptProgress | null;
   children?: Concept[]; // For hierarchical structure
 }

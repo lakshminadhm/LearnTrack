@@ -1,292 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useCourses } from '../../hooks/useCourses';
-import { useAdmin } from '../../hooks/useAdmin';
-import { Concept, CourseDifficulty } from '../../../../shared/src/types';
-import { ChevronDown, ChevronRight, Plus, Edit, Trash, Save, X } from 'lucide-react';
+import { Concept } from '../../../../shared/src/types';
+import { Plus } from 'lucide-react';
 import { adminApi } from '../../services/api';
 import toast from 'react-hot-toast';
-
-interface ConceptItemProps {
-  concept: Concept;
-  level: number;
-  onEdit: (concept: Concept) => void;
-  onDelete: (concept: Concept) => void;
-  onAddChild: (parentId: string) => void;
-  expanded: Record<string, boolean>;
-  toggleExpand: (id: string) => void;
-  addChildForId: string | null;
-  onShowAddChild: (conceptId: string) => void;
-  showFormProps: {
-    courseId: string;
-    onSave: () => void;
-    onCancel: () => void;
-  };
-}
-
-const ConceptItem: React.FC<ConceptItemProps> = ({ 
-  concept, 
-  level, 
-  onEdit, 
-  onDelete,
-  onAddChild,
-  expanded,
-  toggleExpand,
-  addChildForId,
-  onShowAddChild,
-  showFormProps
-}) => {
-  const hasChildren = concept.children && concept.children.length > 0;
-  return (
-    <div className="mb-2">
-      <div 
-        className="flex items-center p-2 rounded-md hover:bg-gray-100 cursor-pointer"
-        style={{ paddingLeft: `${level * 1.5 + 0.5}rem` }}
-      >
-        <div 
-          className="mr-2 w-6 h-6 flex items-center justify-center"
-          onClick={() => hasChildren && toggleExpand(concept.id)}
-        >
-          {hasChildren ? (
-            expanded[concept.id] ? (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-gray-500" />
-            )
-          ) : (
-            <div className="w-4 h-4"></div>
-          )}
-        </div>
-        <div className="flex-grow font-medium" onClick={() => hasChildren && toggleExpand(concept.id)}>
-          {concept.title}
-        </div>
-        <div className="flex space-x-2">
-          <button 
-            onClick={() => onShowAddChild(concept.id)}
-            className="p-1 text-green-600 hover:bg-green-100 rounded"
-            title="Add child concept"
-          >
-            <Plus size={16} />
-          </button>
-          <button 
-            onClick={() => onEdit(concept)}
-            className="p-1 text-blue-600 hover:bg-blue-100 rounded"
-            title="Edit concept"
-          >
-            <Edit size={16} />
-          </button>
-          <button 
-            onClick={() => onDelete(concept)}
-            className="p-1 text-red-600 hover:bg-red-100 rounded"
-            title="Delete concept"
-          >
-            <Trash size={16} />
-          </button>
-        </div>
-      </div>
-      {addChildForId === concept.id && (
-        <div className="ml-8">
-          <ConceptForm
-            concept={null}
-            courseId={showFormProps.courseId}
-            parentId={concept.id}
-            onSave={showFormProps.onSave}
-            onCancel={() => onShowAddChild(null)}
-          />
-        </div>
-      )}
-      {hasChildren && expanded[concept.id] && (
-        <div className="ml-4">
-          {concept.children!.map(child => (
-            <ConceptItem 
-              key={child.id} 
-              concept={child} 
-              level={level + 1}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onAddChild={onAddChild}
-              expanded={expanded}
-              toggleExpand={toggleExpand}
-              addChildForId={addChildForId}
-              onShowAddChild={onShowAddChild}
-              showFormProps={showFormProps}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-interface ConceptFormProps {
-  concept: Concept | null;
-  courseId: string;
-  parentId: string | null;
-  onSave: () => void;
-  onCancel: () => void;
-}
-
-const ConceptForm: React.FC<ConceptFormProps> = ({
-  concept,
-  courseId,
-  parentId,
-  onSave,
-  onCancel
-}) => {
-  const isEditMode = !!concept;
-  const { isLoading } = useAdmin();
-  
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    order_number: 1,
-    resource_link: ''
-  });
-  
-  useEffect(() => {
-    if (concept) {
-      setFormData({
-        title: concept.title,
-        description: concept.description || '',
-        order_number: concept.order_number || 1,
-        resource_link: concept.resource_link || ''
-      });
-    }
-  }, [concept]);
-  
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    const parsedValue = name === 'order_number' ? parseInt(value) : value;
-    setFormData(prev => ({ ...prev, [name]: parsedValue }));
-  };
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      if (isEditMode && concept) {
-        await adminApi.updateConcept(concept.id, {
-          course_id: courseId,
-          title: formData.title,
-          description: formData.description,
-          resource_link: formData.resource_link,
-          order_number: formData.order_number as number
-        });
-        toast.success('Concept updated successfully');
-      } else {
-        await adminApi.createConcept({
-          course_id: courseId,
-          parent_id: parentId || undefined,
-          title: formData.title,
-          description: formData.description,
-          resource_link: formData.resource_link,
-          order_number: formData.order_number as number,
-          difficulty: CourseDifficulty.BEGINNER
-        });
-        toast.success('Concept created successfully');
-      }
-      onSave();
-    } catch (error) {
-      console.error('Error saving concept:', error);
-      toast.error('Failed to save concept');
-    }
-  };
-  
-  return (
-    <div className="bg-white p-4 border rounded-md shadow-sm mb-4">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">
-          {isEditMode ? 'Edit Concept' : 'Add New Concept'}
-        </h3>
-        <button 
-          onClick={onCancel}
-          className="p-1 text-gray-600 hover:bg-gray-100 rounded"
-        >
-          <X size={18} />
-        </button>
-      </div>
-      
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md"
-            required
-          />
-        </div>
-        
-        <div className="mb-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md"
-            rows={3}
-          />
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4 mb-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Order Number
-            </label>
-            <input
-              type="number"
-              name="order_number"
-              value={formData.order_number}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md"
-              min="1"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Resource Link
-            </label>
-            <input
-              type="url"
-              name="resource_link"
-              value={formData.resource_link}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md"
-              placeholder="https://..."
-            />
-          </div>
-        </div>
-        
-        <div className="flex justify-end space-x-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-100 text-gray-800 rounded-md"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center"
-          >
-            <Save size={16} className="mr-1" />
-            {isLoading ? 'Saving...' : 'Save Concept'}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
+import { AdminConceptItem } from './components/AdminConceptItem';
+import { ConceptForm } from './components/ConceptForm';
+import { CourseSelector } from './components/CourseSelector';
 
 const ConceptManagerAdmin: React.FC = () => {
   const { tracks, isLoading: isLoadingTracks } = useCourses();
@@ -299,6 +19,7 @@ const ConceptManagerAdmin: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [addChildForId, setAddChildForId] = useState<string | null>(null);
+  const [editingConceptId, setEditingConceptId] = useState<string | null>(null);
   
   const [editingConcept, setEditingConcept] = useState<Concept | null>(null);
   const [parentId, setParentId] = useState<string | null>(null);
@@ -415,6 +136,7 @@ const ConceptManagerAdmin: React.FC = () => {
     setParentId(null);
     setShowForm(true);
     setAddChildForId(null);
+    setEditingConceptId(null);
   };
   
   const handleAddChildConcept = (parentConceptId: string) => {
@@ -422,13 +144,13 @@ const ConceptManagerAdmin: React.FC = () => {
     setParentId(parentConceptId);
     setShowForm(false);
     setAddChildForId(parentConceptId);
+    setEditingConceptId(null);
   };
   
   const handleEditConcept = (concept: Concept) => {
     setEditingConcept(concept);
     setParentId(concept.parent_id || null);
-    setShowForm(true);
-    setAddChildForId(null);
+    setShowForm(false); // No longer show form at the top for editing
   };
   
   const handleDeleteConcept = async (concept: Concept) => {
@@ -461,6 +183,7 @@ const ConceptManagerAdmin: React.FC = () => {
     setEditingConcept(null);
     setParentId(null);
     setAddChildForId(null);
+    setEditingConceptId(null); // Make sure this line is here to clear the editing state
   };
   
   const handleFormCancel = () => {
@@ -470,49 +193,29 @@ const ConceptManagerAdmin: React.FC = () => {
     setAddChildForId(null);
   };
   
+  // Shared form props for both root and child concept forms
+  const formSharedProps = {
+    courseId: selectedCourseId,
+    onSave: handleFormSave,
+    onCancel: handleFormCancel,
+    rootConcepts,
+    siblingConcepts: []
+  };
+  
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Concept Manager</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Learning Track
-          </label>
-          <select
-            value={selectedTrackId}
-            onChange={handleTrackChange}
-            className="w-full px-4 py-2 border rounded-md"
-            disabled={isLoadingTracks || isLoading}
-          >
-            <option value="">Select a track</option>
-            {tracks.map(track => (
-              <option key={track.id} value={track.id}>
-                {track.title}
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Course
-          </label>
-          <select
-            value={selectedCourseId}
-            onChange={handleCourseChange}
-            className="w-full px-4 py-2 border rounded-md"
-            disabled={!selectedTrackId || isLoading}
-          >
-            <option value="">Select a course</option>
-            {courses.map(course => (
-              <option key={course.id} value={course.id}>
-                {course.title}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      <CourseSelector 
+        tracks={tracks}
+        courses={courses}
+        selectedTrackId={selectedTrackId}
+        selectedCourseId={selectedCourseId}
+        onTrackChange={handleTrackChange}
+        onCourseChange={handleCourseChange}
+        isLoadingTracks={isLoadingTracks}
+        isLoading={isLoading}
+      />
       
       {selectedCourseId && (
         <div className="bg-white p-6 rounded-lg shadow">
@@ -528,13 +231,16 @@ const ConceptManagerAdmin: React.FC = () => {
             </button>
           </div>
           
+          {/* Only show form at the top for adding a new root concept */}
           {showForm && (
             <ConceptForm
-              concept={editingConcept}
+              concept={null}
               courseId={selectedCourseId}
-              parentId={parentId}
+              parentId={null}
               onSave={handleFormSave}
               onCancel={handleFormCancel}
+              rootConcepts={rootConcepts}
+              siblingConcepts={[]}
             />
           )}
           
@@ -551,7 +257,7 @@ const ConceptManagerAdmin: React.FC = () => {
           ) : (
             <div className="border rounded-md">
               {rootConcepts.map(concept => (
-                <ConceptItem
+                <AdminConceptItem
                   key={concept.id}
                   concept={concept}
                   level={0}
@@ -561,11 +267,15 @@ const ConceptManagerAdmin: React.FC = () => {
                   expanded={expanded}
                   toggleExpand={toggleExpand}
                   addChildForId={addChildForId}
+                  editingConceptId={editingConceptId}
                   onShowAddChild={setAddChildForId}
+                  onShowEditForm={setEditingConceptId}
                   showFormProps={{
                     courseId: selectedCourseId,
                     onSave: handleFormSave,
-                    onCancel: handleFormCancel
+                    onCancel: handleFormCancel,
+                    rootConcepts: rootConcepts,
+                    siblingConcepts: []
                   }}
                 />
               ))}
