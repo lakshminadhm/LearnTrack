@@ -15,6 +15,42 @@ interface TrackListProps {
   onPageChange: (page: number) => void;
 }
 
+// New child component for each track
+const TrackListItem: React.FC<{
+  track: LearningTrack;
+  isSelected: boolean;
+  onSelect: (trackId: string) => void;
+}> = ({ track, isSelected, onSelect }) => {
+  const { getToggleProps } = useCollapse({ isExpanded: isSelected });
+  return (
+    <div
+      className={`bg-gray-800 rounded-lg overflow-hidden transition-shadow duration-300 ${
+        isSelected ? 'ring-2 ring-indigo-500' : ''
+      }`}
+    >
+      <div
+        className="p-6 cursor-pointer"
+        {...getToggleProps({
+          onClick: () => onSelect(track.id)
+        })}
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex items-center space-x-3">
+            <BookOpen className="w-6 h-6 text-indigo-400" />
+            <h3 className="text-xl font-semibold text-white">{track.title}</h3>
+          </div>
+          {isSelected ? (
+            <ChevronUp className="w-5 h-5 text-gray-400" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-400" />
+          )}
+        </div>
+        <p className="mt-2 text-gray-400">{track.description}</p>
+      </div>
+    </div>
+  );
+};
+
 const TrackList: React.FC<TrackListProps> = ({
   tracks,
   selectedTrack,
@@ -26,12 +62,6 @@ const TrackList: React.FC<TrackListProps> = ({
   totalPages,
   onPageChange
 }) => {
-  const getCollapseProps = (trackId: string) => {
-    return useCollapse({
-      isExpanded: selectedTrack === trackId
-    });
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -61,39 +91,14 @@ const TrackList: React.FC<TrackListProps> = ({
 
       {tracks.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {tracks.map((track) => {
-            const { getCollapseProps: collapse, getToggleProps: toggle } = getCollapseProps(track.id);
-            const isSelected = selectedTrack === track.id;
-
-            return (
-              <div
-                key={track.id}
-                className={`bg-gray-800 rounded-lg overflow-hidden transition-shadow duration-300 ${
-                  isSelected ? 'ring-2 ring-indigo-500' : ''
-                }`}
-              >
-                <div
-                  className="p-6 cursor-pointer"
-                  {...toggle({
-                    onClick: () => onSelectTrack(track.id)
-                  })}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <BookOpen className="w-6 h-6 text-indigo-400" />
-                      <h3 className="text-xl font-semibold text-white">{track.title}</h3>
-                    </div>
-                    {isSelected ? (
-                      <ChevronUp className="w-5 h-5 text-gray-400" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-400" />
-                    )}
-                  </div>
-                  <p className="mt-2 text-gray-400">{track.description}</p>
-                </div>
-              </div>
-            );
-          })}
+          {tracks.map((track) => (
+            <TrackListItem
+              key={track.id}
+              track={track}
+              isSelected={selectedTrack === track.id}
+              onSelect={onSelectTrack}
+            />
+          ))}
         </div>
       ) : (
         <div className="text-center py-12 bg-gray-800 rounded-lg">
