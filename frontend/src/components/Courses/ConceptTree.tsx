@@ -60,7 +60,22 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
     setError(null);
     try {
       const loadedConcepts = await fetchConceptTree(courseId);
-      setConcepts(loadedConcepts);
+      
+      // Recursively sort concepts by order_number
+      const sortConceptsRecursively = (conceptsList: Concept[]): Concept[] => {
+        // Sort current level by order_number
+        const sortedConcepts = [...conceptsList].sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
+        
+        // Recursively sort children
+        return sortedConcepts.map(concept => ({
+          ...concept,
+          children: concept.children ? sortConceptsRecursively(concept.children) : []
+        }));
+      };
+      
+      // Apply the recursive sorting and update state
+      const sortedConcepts = sortConceptsRecursively(loadedConcepts);
+      setConcepts(sortedConcepts);
     } catch (err) {
       setError('Failed to load course concepts');
       console.error(err);
