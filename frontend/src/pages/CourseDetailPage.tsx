@@ -1,13 +1,21 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCourses } from '../hooks/useCourses';
-import { Course } from '../../../shared/src/types';
+import { Course, CourseDifficulty } from '../../../shared/src/types';
 import ConceptTree from '../components/Courses/ConceptTree';
+import { Page, PageHeader, PageContent, PageSection } from '../components/ui/Page';
+import { Card, CardContent } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
+import { Modal } from '../components/ui/Modal';
+import { Clock, Download, Share2, ArrowLeft, Book, Award, CheckCircle, AlertTriangle } from 'lucide-react';
+import { cn } from '../utils/cn';
 
 const ONBOARDING_KEY = 'learntrack_onboarding_dismissed';
 
 const CourseDetailPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
   const { 
     getCourseById,
     fetchConceptTree,
@@ -22,6 +30,7 @@ const CourseDetailPage: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return localStorage.getItem(ONBOARDING_KEY) !== 'true';
   });
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   useEffect(() => {
     if (courseId) {
@@ -47,9 +56,30 @@ const CourseDetailPage: React.FC = () => {
     setConceptProgress(progress);
   };
 
-  if (isLoading && !course) return <p>Loading course details...</p>;
-  if (error) return <p className="text-red-500">Error loading course: {error}</p>;
-  if (!course) return <p>Course not found.</p>;
+  // Handle back navigation
+  const handleBackNavigation = () => {
+    if (course?.track_id) {
+      navigate(`/tracks/${course.track_id}`);
+    } else {
+      navigate('/courses');
+    }
+  };
+
+  // Get difficulty badge variant
+  const getDifficultyVariant = (difficulty?: CourseDifficulty): string => {
+    if (!difficulty) return 'default';
+    
+    switch (difficulty) {
+      case CourseDifficulty.BEGINNER:
+        return 'success';
+      case CourseDifficulty.INTERMEDIATE:
+        return 'info';
+      case CourseDifficulty.ADVANCED:
+        return 'accent';
+      default:
+        return 'default';
+    }
+  };
 
   // Calculate the circular progress stroke dash array and offset
   const calculateStrokeDashOffset = (percentage: number) => {
@@ -60,135 +90,295 @@ const CourseDetailPage: React.FC = () => {
   // Use concept progress if available, otherwise fall back to course.progress
   const progressPercentage = conceptProgress !== null 
     ? conceptProgress 
-    : (course.progress?.progress_percentage || 0);
+    : (course?.progress?.progress_percentage || 0);
+  
+  // Loading state
+  if (isLoading && !course) {
+    return (
+      <Page className="container max-w-screen-xl mx-auto">
+        <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <div className="w-12 h-12 rounded-full border-4 border-primary-200 border-t-primary-600 animate-spin"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading course details...</p>
+        </div>
+      </Page>
+    );
+  }
+  
+  // Error state
+  if (error) {
+    return (
+      <Page className="container max-w-screen-xl mx-auto">
+        <Card variant="bordered">
+          <CardContent className="p-8 flex flex-col items-center">
+            <AlertTriangle size={48} className="text-red-500 mb-4" />
+            <h1 className="text-2xl font-bold text-red-600 dark:text-red-500 mb-2">Error Loading Course</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+            <Button variant="outline" as={Link} to="/courses" leftIcon={<ArrowLeft size={16} />}>
+              Return to Courses
+            </Button>
+          </CardContent>
+        </Card>
+      </Page>
+    );
+  }
+  
+  // Not found state
+  if (!course) {
+    return (
+      <Page className="container max-w-screen-xl mx-auto">
+        <Card variant="bordered">
+          <CardContent className="p-8 flex flex-col items-center">
+            <Book size={48} className="text-gray-400 mb-4" />
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Course Not Found</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">The course you're looking for doesn't exist or has been removed.</p>
+            <Button variant="primary" as={Link} to="/courses" leftIcon={<ArrowLeft size={16} />}>
+              Browse All Courses
+            </Button>
+          </CardContent>
+        </Card>
+      </Page>
+    );
+  }
 
   return (
-    <div className="w-full px-2 md:px-6 mx-auto my-4 md:my-10 max-w-screen-2xl">
+    <Page className="container max-w-screen-xl mx-auto" animation="fade-in">
       {/* Onboarding Banner */}
       {showOnboarding && (
-        <div className="mb-6 animate-fade-in rounded-2xl shadow-xl bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-400 text-white px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative">
-          <div>
-            <h2 className="text-xl font-bold mb-1">Welcome to Your Learning Path!</h2>
-            <ul className="list-disc ml-6 text-base space-y-1">
-              <li>Track your course progress visually and interactively.</li>
-              <li>Expand concepts to explore subtopics and mark them as complete.</li>
-              <li>Admins can add new concepts using the <span className="font-semibold">“+”</span> button.</li>
-              <li>Download or share your progress with your team.</li>
-            </ul>
-          </div>
-          <button
-            onClick={handleDismissOnboarding}
-            className="absolute top-3 right-3 md:static md:ml-8 px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            aria-label="Dismiss onboarding"
-          >
-            Dismiss
-          </button>
-        </div>
+        <Card className="mb-8 bg-gradient-to-r from-primary-600 to-primary-400 text-white border-none shadow-elevation-large overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold mb-2">Welcome to Your Learning Path!</h2>
+                <ul className="list-disc ml-6 text-base space-y-1">
+                  <li>Track your progress visually through the concept tree.</li>
+                  <li>Expand concepts to explore subtopics and mark them as complete.</li>
+                  <li>Admins can add new concepts using the "+" button.</li>
+                  <li>Download or share your progress with your team.</li>
+                </ul>
+              </div>
+              <Button 
+                variant="outline" 
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                onClick={handleDismissOnboarding}
+              >
+                Dismiss
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
-      {/* Header */}
-      <div className="relative rounded-3xl shadow-2xl overflow-hidden mb-8 bg-gradient-to-br from-indigo-700 via-indigo-500 to-blue-400">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between px-6 py-8 md:py-12 gap-4">
-          <Link 
-            to={`/tracks/${course.track_id}`}
-            className="text-white/90 hover:text-white font-semibold flex items-center text-base md:text-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            aria-label="Back to Course List"
-          >
-            <span className="mr-2 text-2xl">&larr;</span> Back to Course List
-          </Link>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white tracking-tight drop-shadow-xl text-center md:text-left flex-1">
-            {course.title}
-          </h1>
-        </div>
-      </div>
 
-      {/* Main Content Layout */}
-      <div className="flex flex-col-reverse lg:flex-row gap-8">
-        {/* Sidebar: Course Info & Progress */}
-        <aside className="lg:w-1/3 xl:w-1/4 flex-shrink-0 w-full lg:sticky lg:top-8 z-20">
-          <div className="bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-6 md:p-8 mb-8">
-            <h2 className="text-xl font-bold text-indigo-700 dark:text-indigo-300 mb-4">About this Course</h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base mb-6">{course.description}</p>
-            <div className="border-t border-gray-200 dark:border-gray-800 my-6" />
-            <h2 className="text-xl font-bold text-indigo-700 dark:text-indigo-300 mb-4">Progress</h2>
-            {course.progress || conceptProgress !== null ? (
-              <div className="bg-white/90 dark:bg-gray-900/90 rounded-xl p-6 border border-indigo-100/80 dark:border-indigo-800 shadow-md transition-all mb-2">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Completion</span>
-                  <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">{progressPercentage}%</span>
+      {/* Course Header */}
+      <PageHeader
+        title={
+          <div className="flex flex-wrap items-center gap-3">
+            {course.title}
+            {course.difficulty && (
+              <Badge variant={getDifficultyVariant(course.difficulty as CourseDifficulty)}>
+                {course.difficulty}
+              </Badge>
+            )}
+          </div>
+        }
+        description={
+          <div className="flex items-center text-gray-500 dark:text-gray-400 mt-1">
+            <Clock className="w-4 h-4 mr-1.5" />
+            <span>{course.duration_hours} hours</span>
+          </div>
+        }
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            as={Link}
+            to={course.track_id ? `/tracks/${course.track_id}` : '/courses'}
+            leftIcon={<ArrowLeft size={16} />}
+          >
+            Back to {course.track_id ? 'Track' : 'Courses'}
+          </Button>
+        }
+      />
+
+      <PageContent>
+        <div className="grid grid-cols-1 lg:grid-cols-8 gap-8">
+          {/* Sidebar: Course Info & Progress */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Course Info Card */}
+            <Card variant="bordered" className="shadow-elevation-medium">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">About this Course</h2>
+                <p className="text-gray-700 dark:text-gray-300 mb-6">{course.description}</p>
+                
+                <div className="border-t border-gray-200 dark:border-gray-700 my-4" />
+                
+                <div className="flex items-center text-gray-700 dark:text-gray-300 mb-2">
+                  <Award className="w-5 h-5 mr-2 text-primary-500" />
+                  <span>Level: <span className="font-medium">{course.difficulty || 'Not specified'}</span></span>
                 </div>
-                {/* Circular Progress Indicator */}
-                <div className="flex items-center justify-center mb-4">
-                  <div className="relative w-28 h-28">
+                
+                <div className="flex items-center text-gray-700 dark:text-gray-300">
+                  <Clock className="w-5 h-5 mr-2 text-primary-500" />
+                  <span>Duration: <span className="font-medium">{course.duration_hours} hours</span></span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Progress Card */}
+            <Card variant="bordered" className="shadow-elevation-medium">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Your Progress</h2>
+                
+                {/* Circular Progress */}
+                <div className="flex justify-center mb-6">
+                  <div className="relative w-32 h-32">
                     <svg className="w-full h-full" viewBox="0 0 100 100">
-                      <circle className="text-indigo-100 dark:text-gray-800" strokeWidth="8" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                      <circle className="text-indigo-600 dark:text-indigo-400 transition-all duration-1000 ease-in-out" strokeWidth="8" strokeLinecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" strokeDasharray={2 * Math.PI * 45} strokeDashoffset={calculateStrokeDashOffset(progressPercentage)} transform="rotate(-90 50 50)" />
+                      <circle 
+                        className="text-gray-100 dark:text-gray-800" 
+                        strokeWidth="10" 
+                        stroke="currentColor" 
+                        fill="transparent" 
+                        r="45" 
+                        cx="50" 
+                        cy="50" 
+                      />
+                      <circle 
+                        className={cn(
+                          "transition-all duration-1000 ease-out",
+                          progressPercentage >= 100 
+                            ? "text-green-500 dark:text-green-400" 
+                            : "text-primary-500 dark:text-primary-400"
+                        )}
+                        strokeWidth="10" 
+                        strokeLinecap="round" 
+                        stroke="currentColor" 
+                        fill="transparent" 
+                        r="45" 
+                        cx="50" 
+                        cy="50" 
+                        strokeDasharray={2 * Math.PI * 45} 
+                        strokeDashoffset={calculateStrokeDashOffset(progressPercentage)} 
+                        transform="rotate(-90 50 50)" 
+                      />
                     </svg>
-                    <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                      <span className="text-xl font-bold text-indigo-700 dark:text-indigo-300">{progressPercentage}%</span>
+                    <div className="absolute inset-0 flex items-center justify-center flex-col">
+                      <span className="text-2xl font-bold text-gray-900 dark:text-white">{Math.round(progressPercentage)}%</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Complete</span>
                     </div>
                   </div>
                 </div>
-                <div className="w-full bg-indigo-100 dark:bg-gray-800 rounded-full h-3">
-                  <div className="bg-gradient-to-r from-indigo-500 to-blue-400 dark:from-indigo-600 dark:to-blue-500 h-full rounded-full transition-all duration-500 flex items-center justify-end" style={{ width: `${progressPercentage}%` }}>
-                    {progressPercentage > 5 && (
-                      <div className="h-5 w-5 bg-white dark:bg-gray-900 rounded-full shadow-sm mr-0.5 hidden sm:flex items-center justify-center">
-                        <div className="h-2.5 w-2.5 bg-indigo-500 dark:bg-indigo-400 rounded-full"></div>
+                
+                {/* Details */}
+                {progressPercentage > 0 && (
+                  <div className="rounded-lg bg-gray-50 dark:bg-gray-800/50 p-4 mb-6">
+                    <div className="flex items-center mb-2">
+                      <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {course.progress?.completed_concepts || 0} concepts completed
+                      </span>
+                    </div>
+                    
+                    {course.progress?.last_activity && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Last activity: {new Date(course.progress.last_activity).toLocaleDateString()}
                       </div>
                     )}
                   </div>
+                )}
+                
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    variant="outline"
+                    leftIcon={<Download size={16} />}
+                    onClick={() => {
+                      // Placeholder: implement CSV export logic
+                      alert('Download progress as CSV coming soon!');
+                    }}
+                  >
+                    Export Progress
+                  </Button>
+                  <Button
+                    variant="outline"
+                    leftIcon={<Share2 size={16} />}
+                    onClick={() => setShareModalOpen(true)}
+                  >
+                    Share Course
+                  </Button>
                 </div>
-              </div>
-            ) : (
-              <div className="bg-white/90 dark:bg-gray-900/90 rounded-xl p-6 border border-gray-100 dark:border-gray-800 text-center">
-                <span className="text-gray-400 dark:text-gray-500">No progress data available</span>
-              </div>
-            )}
-            <div className="flex gap-2 mt-4">
-              <button
-                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
-                title="Download Progress as CSV"
-                aria-label="Download Progress"
-                onClick={() => {
-                  // Placeholder: implement CSV export logic
-                  alert('Download as CSV coming soon!');
-                }}
-              >
-                Download Progress
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-                title="Share Course"
-                aria-label="Share Course"
-                onClick={() => {
-                  // Placeholder: implement share modal logic
-                  alert('Share course link coming soon!');
-                }}
-              >
-                Share Course
-              </button>
-            </div>
+              </CardContent>
+            </Card>
           </div>
-        </aside>
-
-        {/* Main: Concepts Tree */}
-        <main className="flex-1 min-w-0 relative">
-          <div className="bg-white/90 dark:bg-gray-900/90 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 p-4 md:p-8 animate-fade-in-up">
-            {courseId && (
-              <ConceptTree
-                courseId={courseId}
-                fetchConceptTree={fetchConceptTree}
-                fetchConceptChildren={fetchConceptChildren}
-                completeConcept={completeConcept}
-                createConcept={createConcept}
-                onProgressUpdate={handleProgressUpdate}
-              />
-            )}
+          
+          {/* Main Content: Concept Tree */}
+          <div className="lg:col-span-6">
+            <Card variant="bordered" className="shadow-elevation-medium overflow-hidden">
+              <CardContent className="p-0">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Course Content</h2>
+                  <p className="text-gray-500 dark:text-gray-400 mt-1">
+                    Explore the course structure and track your learning progress
+                  </p>
+                </div>
+                <div className="p-6">
+                  {courseId && (
+                    <ConceptTree
+                      courseId={courseId}
+                      fetchConceptTree={fetchConceptTree}
+                      fetchConceptChildren={fetchConceptChildren}
+                      completeConcept={completeConcept}
+                      createConcept={createConcept}
+                      onProgressUpdate={handleProgressUpdate}
+                    />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          {/* Floating Action Button for Admins (Concept Add) */}
-          {/* This will be rendered by ConceptTree if user is admin, but you can move it here if you want a global FAB */}
-        </main>
-      </div>
-    </div>
+        </div>
+      </PageContent>
+      
+      {/* Share Modal */}
+      <Modal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        title="Share this Course"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700 dark:text-gray-300">
+            Share this course with your colleagues or friends:
+          </p>
+          
+          <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+            <input 
+              type="text"
+              readOnly
+              value={window.location.href}
+              className="w-full bg-transparent border-none focus:ring-0 text-sm text-gray-700 dark:text-gray-300"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Link copied to clipboard!");
+              }}
+            >
+              Copy
+            </Button>
+          </div>
+          
+          <div className="flex gap-3 mt-6 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShareModalOpen(false)}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </Page>
   );
 };
 
