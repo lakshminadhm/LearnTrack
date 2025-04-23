@@ -32,21 +32,21 @@ const HomePage: React.FC = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-indigo-600 to-blue-700 py-20 text-white mb-12 rounded-xl">
+      <section className="bg-gradient-to-r from-indigo-600 to-blue-700 py-20 text-white mb-12 rounded-xl dark:from-gray-900 dark:to-gray-800 dark:text-gray-100 transition-colors">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 md:pr-12">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 Track Your Learning Journey
               </h1>
-              <p className="text-xl mb-8 text-indigo-100">
+              <p className="text-xl mb-8 text-indigo-100 dark:text-indigo-200">
                 LearnTrack helps you monitor your daily progress, set goals, and visualize your growth as you master new technologies.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 {isAuthenticated ? (
                   <Link
                     to="/dashboard"
-                    className="inline-block bg-white text-indigo-700 font-medium px-6 py-3 rounded-lg hover:bg-indigo-50 transition-colors"
+                    className="inline-block bg-white text-indigo-700 font-medium px-6 py-3 rounded-lg hover:bg-indigo-50 dark:bg-gray-900 dark:text-indigo-200 dark:hover:bg-gray-800 transition-colors"
                   >
                     Go to Dashboard
                   </Link>
@@ -54,13 +54,13 @@ const HomePage: React.FC = () => {
                   <>
                     <Link
                       to="/register"
-                      className="inline-block bg-white text-indigo-700 font-medium px-6 py-3 rounded-lg hover:bg-indigo-50 transition-colors"
+                      className="inline-block bg-white text-indigo-700 font-medium px-6 py-3 rounded-lg hover:bg-indigo-50 dark:bg-gray-900 dark:text-indigo-200 dark:hover:bg-gray-800 transition-colors"
                     >
                       Get Started
                     </Link>
                     <Link
                       to="/login"
-                      className="inline-block border-2 border-white text-white font-medium px-6 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors"
+                      className="inline-block border-2 border-white text-white font-medium px-6 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 dark:border-gray-700 dark:text-indigo-200 dark:hover:bg-gray-800 transition-colors"
                     >
                       Login
                     </Link>
@@ -69,7 +69,7 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             <div className="md:w-1/2 mt-12 md:mt-0">
-              <div className="bg-white bg-opacity-10 p-6 rounded-lg shadow-lg backdrop-blur-sm">
+              <div className="bg-white bg-opacity-10 p-6 rounded-lg shadow-lg backdrop-blur-sm dark:bg-gray-800 dark:bg-opacity-80 dark:shadow-xl">
                 <div className="flex items-center mb-4">
                   <BookOpen className="w-8 h-8 text-indigo-300 mr-4" />
                   <div>
@@ -77,7 +77,7 @@ const HomePage: React.FC = () => {
                     <p className="text-sm text-indigo-200">JavaScript: 2.5 hours</p>
                   </div>
                 </div>
-                <div className="h-2 w-full bg-white bg-opacity-20 rounded-full mb-4">
+                <div className="h-2 w-full bg-white bg-opacity-20 rounded-full mb-4 dark:bg-gray-700 dark:bg-opacity-40">
                   <div className="h-2 bg-green-400 rounded-full" style={{ width: '75%' }}></div>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-center">
@@ -103,15 +103,15 @@ const HomePage: React.FC = () => {
       {/* Features Section */}
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-gray-100 transition-colors">
             Track, Analyze, and Achieve
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow dark:bg-gray-900 dark:text-gray-100 dark:hover:shadow-xl">
                 <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-bold mb-2 text-gray-800">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-gray-100">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -119,25 +119,25 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gray-100 py-16 rounded-xl mt-12">
+      <section className="bg-gray-100 py-16 rounded-xl mt-12 dark:bg-gray-900 transition-colors">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4 text-gray-800">
+          <h2 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-100">
             Ready to Level Up Your Learning?
           </h2>
-          <p className="text-xl mb-8 text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl mb-8 text-gray-600 max-w-2xl mx-auto dark:text-gray-300">
             Join thousands of developers who use LearnTrack to stay consistent, track progress, and reach their learning goals.
           </p>
           {isAuthenticated ? (
             <Link
               to="/logs"
-              className="inline-block bg-indigo-600 text-white font-medium px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors"
+              className="inline-block bg-indigo-600 text-white font-medium px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-800"
             >
               Start Logging
             </Link>
           ) : (
             <Link
               to="/register"
-              className="inline-block bg-indigo-600 text-white font-medium px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors"
+              className="inline-block bg-indigo-600 text-white font-medium px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-800"
             >
               Create Free Account
             </Link>

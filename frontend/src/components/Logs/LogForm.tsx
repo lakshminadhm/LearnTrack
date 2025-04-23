@@ -66,15 +66,15 @@ const LogForm: React.FC<LogFormProps> = ({
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">
+    <div className="bg-white/90 dark:bg-gray-900/90 p-6 rounded-lg shadow-md text-gray-700">
+      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
         {initialData ? 'Edit Learning Log' : 'Create New Learning Log'}
       </h3>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 text-gray-700 dark:text-gray-300">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Date
             </label>
             <input
@@ -85,12 +85,12 @@ const LogForm: React.FC<LogFormProps> = ({
               onChange={handleChange}
               max={new Date().toISOString().split('T')[0]}
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block bg-inherit w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
           
           <div>
-            <label htmlFor="technology" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="technology" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Technology
             </label>
             <input
@@ -101,7 +101,7 @@ const LogForm: React.FC<LogFormProps> = ({
               onChange={handleChange}
               list="tech-options"
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-1 block w-full border bg-inherit border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="e.g., React, Python, AWS"
             />
             <datalist id="tech-options">
@@ -113,7 +113,7 @@ const LogForm: React.FC<LogFormProps> = ({
         </div>
         
         <div>
-          <label htmlFor="hours_spent" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="hours_spent" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Hours Spent
           </label>
           <input
@@ -125,13 +125,13 @@ const LogForm: React.FC<LogFormProps> = ({
             min="0.1"
             step="0.1"
             required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block bg-inherit w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             placeholder="Enter hours spent learning"
           />
         </div>
         
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-inherit mb-1">
             Notes
           </label>
           <textarea
@@ -140,7 +140,7 @@ const LogForm: React.FC<LogFormProps> = ({
             value={formData.notes}
             onChange={handleChange}
             rows={3}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block bg-inherit w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             placeholder="What did you learn? Any challenges or achievements?"
           ></textarea>
         </div>

@@ -41,10 +41,10 @@ const generateColorFromString = (str: string): string => {
 const TechBreakdown: React.FC<TechBreakdownProps> = ({ techData, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center h-80">
+      <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center h-80 dark:bg-gray-900 dark:text-gray-100">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-          <div className="h-64 w-64 bg-gray-200 rounded-full"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-4 dark:bg-gray-800"></div>
+          <div className="h-64 w-64 bg-gray-200 rounded-full dark:bg-gray-800"></div>
         </div>
       </div>
     );
@@ -52,9 +52,9 @@ const TechBreakdown: React.FC<TechBreakdownProps> = ({ techData, isLoading }) =>
 
   if (!techData || techData.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Technology Breakdown</h3>
-        <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+      <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-900 dark:text-gray-100">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4 dark:text-gray-100">Technology Breakdown</h3>
+        <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
           <p>No technology data available yet.</p>
           <p className="text-sm mt-2">Log your learning sessions to see your technology breakdown!</p>
         </div>
@@ -104,23 +104,20 @@ const TechBreakdown: React.FC<TechBreakdownProps> = ({ techData, isLoading }) =>
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">Technology Breakdown</h3>
+    <div className="bg-white/90 dark:bg-gray-900/90 p-8 rounded-2xl shadow-xl transition-all border border-gray-100 dark:border-gray-800">
+      <h3 className="text-2xl font-bold text-gray-800 mb-8 dark:text-gray-100 tracking-tight">Technology Breakdown</h3>
       <div className="h-72">
         <Pie data={data} options={options} />
       </div>
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
         {sortedTechData.slice(0, 4).map((tech, index) => (
-          <div key={index} className="flex items-center py-2 px-3 rounded-md bg-gray-50">
-            <div 
-              className="w-3 h-3 rounded-full mr-2" 
-              style={{ backgroundColor: generateColorFromString(tech.technology) }}
-            ></div>
+          <div key={index} className="flex items-center py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/70 shadow group hover:shadow-lg transition-all">
+            <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: generateColorFromString(tech.technology) }}></div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{tech.technology}</p>
+              <p className="text-base font-semibold text-gray-900 truncate dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">{tech.technology}</p>
             </div>
             <div className="flex-none">
-              <p className="text-sm text-gray-500">{tech.hours} hrs ({tech.percentage.toFixed(1)}%)</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{tech.hours} hrs ({tech.percentage.toFixed(1)}%)</p>
             </div>
           </div>
         ))}

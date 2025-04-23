@@ -249,16 +249,17 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
   };
 
   return (
-    <div className="rounded-xl overflow-hidden border border-gray-200 bg-white/70 flex flex-col h-[calc(100vh-12rem)] max-h-[800px]">
+    <div className="relative rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 flex flex-col h-[calc(100vh-12rem)] max-h-[800px] shadow-xl transition-all animate-fade-in-up">
       <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-indigo-500/30 to-blue-400/30 flex flex-wrap justify-between items-center sticky top-0 z-10">
-        <h3 className="text-xl sm:text-2xl font-bold text-indigo-800 tracking-tight">Learning Concepts</h3>
+        <h3 className="text-2xl font-bold text-indigo-800 dark:text-indigo-300 tracking-tight">Learning Concepts</h3>
         <div className="flex gap-2 mt-2 sm:mt-0">
           <button
-            className="rounded-full bg-white hover:bg-indigo-100 text-indigo-600 shadow-sm transition px-2 py-2 flex items-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="rounded-full bg-white hover:bg-indigo-100 dark:bg-gray-800 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-300 shadow-sm transition px-2 py-2 flex items-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
             onClick={loadConcepts}
             disabled={isLoading}
             aria-label="Refresh concepts"
             title="Refresh concepts"
+            data-tooltip-id="refresh-tooltip"
           >
             <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -266,6 +267,8 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
             <Link
               to="/admin/concepts"
               className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition px-3 py-1.5 sm:px-4 sm:py-2 flex items-center text-sm sm:text-base font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              data-tooltip-id="manage-tooltip"
+              title="Manage all concepts as admin"
             >
               <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1" />
               Manage Concepts
@@ -273,7 +276,18 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
           )}
         </div>
       </div>
-
+      {/* FAB for admin add concept */}
+      {isAdmin && createConcept && !showAddForm && (
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="fixed bottom-8 right-8 z-50 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl p-5 flex items-center justify-center transition-all focus:outline-none focus:ring-4 focus:ring-indigo-300 animate-pop"
+          aria-label="Add new concept"
+          title="Add new concept"
+          data-tooltip-id="fab-tooltip"
+        >
+          <PlusCircle className="w-7 h-7" />
+        </button>
+      )}
       {error && (
         <div className="p-3 bg-red-50 border-b border-red-200 text-red-700 flex items-center">
           <AlertCircle className="w-4 h-4 mr-2" />
@@ -453,7 +467,7 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
             )}
           </div>
         ) : (
-          <div className="concept-tree divide-y divide-indigo-100" role="tree" aria-label="Course concepts">
+          <div className="concept-tree divide-y divide-indigo-100 dark:divide-indigo-900" role="tree" aria-label="Course concepts">
             {concepts.map((concept, index) => (
               <ConceptItem
                 key={concept.id}

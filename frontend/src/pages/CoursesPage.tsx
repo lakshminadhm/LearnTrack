@@ -25,8 +25,8 @@ const CoursesPage: React.FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Learning Tracks</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 transition-colors">Learning Tracks</h1>
+        <p className="text-gray-600 mt-1 dark:text-gray-300 transition-colors">
           Explore our curated learning tracks and click on one to see its courses.
         </p>
       </div>

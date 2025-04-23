@@ -20,10 +20,10 @@ const DashboardPage: React.FC = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Your Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 transition-colors">Your Dashboard</h1>
         <button
           onClick={() => fetchAllAnalytics()}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-800"
           disabled={isLoading}
         >
           {isLoading ? 'Refreshing...' : 'Refresh'}

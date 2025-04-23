@@ -36,9 +36,9 @@ const PostForm: React.FC<PostFormProps> = ({
   };
 
   return (
-    <div className={`${isReply ? 'bg-gray-50 p-4 rounded-lg mt-2' : 'bg-white p-6 rounded-lg shadow-md mb-6'}`}>
+    <div className={`${isReply ? 'bg-gray-50 p-4 rounded-lg mt-2' : 'bg-white/90 dark:bg-gray-900/90 p-6 rounded-lg shadow-md mb-6'}`}>
       {!isReply && (
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-300 mb-4">
           Share with the Community
         </h3>
       )}
@@ -46,7 +46,7 @@ const PostForm: React.FC<PostFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           {!isReply && (
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-3  00 mb-1">
               What's on your mind?
             </label>
           )}
@@ -55,7 +55,7 @@ const PostForm: React.FC<PostFormProps> = ({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={isReply ? 2 : 3}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full border border-gray-300 bg-inherit rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             placeholder={isReply ? "Write a reply..." : "Share your learning experience, ask a question, or give advice..."}
           ></textarea>
         </div>

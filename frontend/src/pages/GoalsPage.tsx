@@ -39,10 +39,10 @@ const GoalsPage: React.FC = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Learning Goals</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 transition-colors">Learning Goals</h1>
         <button
           onClick={toggleForm}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-800"
         >
           {showForm ? 'Hide Form' : 'Add New Goal'}
         </button>

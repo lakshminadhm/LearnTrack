@@ -15,12 +15,12 @@ const GoalList: React.FC<GoalListProps> = ({ goals, onEdit, onDelete, isLoading 
   
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white/90 dark:bg-gray-900/90 p-6 rounded-lg shadow-md">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-6"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-1/3 mb-6"></div>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
+              <div key={i} className="h-24 bg-gray-200 dark:bg-gray-800 rounded"></div>
             ))}
           </div>
         </div>
@@ -93,8 +93,8 @@ const GoalList: React.FC<GoalListProps> = ({ goals, onEdit, onDelete, isLoading 
   };
   
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Learning Goals</h3>
+    <div className="bg-white/90 dark:bg-gray-900/90 p-6 rounded-lg shadow-md">
+      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Your Learning Goals</h3>
       
       <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4 mb-6">
         <div className="flex-grow">
@@ -103,19 +103,19 @@ const GoalList: React.FC<GoalListProps> = ({ goals, onEdit, onDelete, isLoading 
             placeholder="Search goals..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-2 bg-inherit border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
         <div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="block w-full bg-inherit pl-3 pr-10 py-2 text-base text-gray-800 dark:text-gray-200  border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
-            <option value="all">All Statuses</option>
-            <option value={GoalStatus.NOT_STARTED}>Not Started</option>
-            <option value={GoalStatus.IN_PROGRESS}>In Progress</option>
-            <option value={GoalStatus.COMPLETED}>Completed</option>
+            <option className='text-gray-200 dark:text-gray-800' value="all">All Statuses</option>
+            <option className='text-gray-200 dark:text-gray-800' value={GoalStatus.NOT_STARTED}>Not Started</option>
+            <option className='text-gray-200 dark:text-gray-800' value={GoalStatus.IN_PROGRESS}>In Progress</option>
+            <option className='text-gray-200 dark:text-gray-800' value={GoalStatus.COMPLETED}>Completed</option>
           </select>
         </div>
       </div>

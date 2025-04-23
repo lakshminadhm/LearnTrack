@@ -65,14 +65,12 @@ const PostList: React.FC<PostListProps> = ({
   
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
-            ))}
-          </div>
+      <div className="bg-white/90 dark:bg-gray-900/90 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-1/3 mb-8 dark:bg-gray-800"></div>
+        <div className="space-y-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-24 bg-gray-200 rounded-xl dark:bg-gray-800"></div>
+          ))}
         </div>
       </div>
     );
@@ -93,65 +91,32 @@ const PostList: React.FC<PostListProps> = ({
   const renderPost = (post: Post, isReply = false) => {
     const hasReplies = repliesByParent[post.id] && repliesByParent[post.id].length > 0;
     const isExpanded = expandedReplies[post.id];
-    
     return (
-      <div 
-        key={post.id} 
-        className={`${
-          isReply ? 'ml-8 mt-3 pt-3 border-t border-gray-100' : 'mb-6 border border-gray-200 rounded-lg'
-        } p-4 ${isReply ? '' : 'bg-white shadow-sm hover:border-indigo-200'} transition-colors duration-300`}
-      >
+      <div key={post.id} className={`${isReply ? 'ml-8 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800' : 'mb-6 border border-gray-100 dark:border-gray-800 rounded-2xl'} p-6 ${isReply ? '' : 'bg-white/90 dark:bg-gray-900/90 shadow-xl hover:shadow-2xl'} transition-all duration-300`}> 
         <div className="flex justify-between items-start">
           <div className="flex items-center">
             <div className="bg-indigo-100 rounded-full p-2 mr-3">
               <User className="w-5 h-5 text-indigo-700" />
             </div>
             <div>
-              <p className="font-medium text-gray-900">{post.username || 'Anonymous User'}</p>
-              <div className="flex items-center text-xs text-gray-500">
+              <p className="font-semibold text-gray-900 dark:text-gray-100">{post.username || 'Anonymous User'}</p>
+              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                 <Clock className="w-3 h-3 mr-1" />
                 <span>{formatDate(post.created_at)}</span>
               </div>
             </div>
           </div>
         </div>
-        
-        <div className="mt-3 text-gray-700">
-          {post.content}
-        </div>
-        
-        <div className="mt-3 flex items-center space-x-4">
-          <button
-            onClick={() => toggleReplyForm(post.id)}
-            className="inline-flex items-center text-xs font-medium text-indigo-600 hover:text-indigo-700"
-          >
-            <MessageSquare className="w-3 h-3 mr-1" />
-            {replyingTo === post.id ? 'Cancel' : 'Reply'}
-          </button>
-          
+        <div className="mt-4 text-gray-700 dark:text-gray-200 text-base">{post.content}</div>
+        <div className="mt-4 flex items-center space-x-6">
+          <button onClick={() => toggleReplyForm(post.id)} className="inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"><MessageSquare className="w-4 h-4 mr-1" />{replyingTo === post.id ? 'Cancel' : 'Reply'}</button>
           {hasReplies && (
-            <button
-              onClick={() => toggleReplies(post.id)}
-              className="inline-flex items-center text-xs font-medium text-gray-500 hover:text-gray-700"
-            >
-              {isExpanded
-                ? `Hide ${repliesByParent[post.id].length} replies`
-                : `View ${repliesByParent[post.id].length} replies`
-              }
-            </button>
+            <button onClick={() => toggleReplies(post.id)} className="inline-flex items-center text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">{isExpanded ? `Hide ${repliesByParent[post.id].length} replies` : `View ${repliesByParent[post.id].length} replies`}</button>
           )}
         </div>
-        
         {replyingTo === post.id && (
-          <PostForm 
-            onSubmit={(data) => handleReply(post.id, data)}
-            parentId={post.id}
-            isReply={true}
-            isLoading={isLoading}
-            onCancel={() => toggleReplyForm(null)}
-          />
+          <PostForm onSubmit={(data) => handleReply(post.id, data)} parentId={post.id} isReply={true} isLoading={isLoading} onCancel={() => toggleReplyForm(null)} />
         )}
-        
         {hasReplies && isExpanded && (
           <div className="mt-2">
             {repliesByParent[post.id].map(reply => renderPost(reply, true))}
@@ -162,17 +127,16 @@ const PostList: React.FC<PostListProps> = ({
   };
   
   return (
-    <div className="mb-6">
-      <h3 className="text-xl font-semibold text-gray-800 mb-6">Community Discussions</h3>
-      
+    <div className="mb-10">
+      <h3 className="text-2xl font-bold text-gray-800 mb-8 dark:text-gray-100 tracking-tight">Community Discussions</h3>
       {topLevelPosts.length > 0 ? (
-        <div>
+        <div className="space-y-8">
           {topLevelPosts.map(post => renderPost(post))}
         </div>
       ) : (
-        <div className="text-center py-12 bg-white border border-dashed border-gray-300 rounded-lg shadow-sm">
-          <p className="text-gray-500">No posts yet</p>
-          <p className="text-sm text-gray-400 mt-1">Be the first to start a discussion!</p>
+        <div className="text-center py-16 bg-white/90 dark:bg-gray-900/90 border-2 border-dashed border-gray-200 rounded-2xl shadow-xl dark:border-gray-700">
+          <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">No posts yet</p>
+          <p className="text-sm text-gray-400 mt-1 dark:text-gray-500">Be the first to start a discussion!</p>
         </div>
       )}
     </div>

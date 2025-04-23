@@ -32,7 +32,7 @@ interface StreakChartProps {
 const StreakChart: React.FC<StreakChartProps> = ({ streak, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center h-64">
+      <div className="bg-white/90 dark:bg-gray-900/90 p-6 rounded-lg shadow-md flex items-center justify-center h-64">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
           <div className="h-32 bg-gray-200 rounded w-full"></div>
@@ -43,9 +43,9 @@ const StreakChart: React.FC<StreakChartProps> = ({ streak, isLoading }) => {
 
   if (!streak || !streak.dates || streak.dates.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Learning Streak</h3>
-        <div className="flex flex-col items-center justify-center h-48 text-gray-500">
+      <div className="bg-white/90 dark:bg-gray-900/90 p-6 rounded-lg shadow-md dark:bg-gray-900 dark:text-gray-100 ">
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Learning Streak</h3>
+        <div className="flex flex-col items-center justify-center h-48 text-gray-500 dark:text-gray-400">
           <p>No streak data available yet.</p>
           <p className="text-sm mt-2">Start logging your daily learning to see your streak!</p>
         </div>
@@ -136,20 +136,20 @@ const StreakChart: React.FC<StreakChartProps> = ({ streak, isLoading }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white/90 dark:bg-gray-900/90 p-8 rounded-2xl shadow-xl transition-all border border-gray-100 dark:border-gray-800">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-semibold text-gray-800">Learning Streak</h3>
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Learning Streak</h3>
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-bold text-indigo-600">{streak.current}</span>
-              <span className="text-xs text-gray-500">Current</span>
+              <span className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{streak.current}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Current</span>
             </div>
           </div>
           <div className="flex items-center">
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-bold text-indigo-800">{streak.longest}</span>
-              <span className="text-xs text-gray-500">Longest</span>
+              <span className="text-3xl font-bold text-indigo-800 dark:text-indigo-200">{streak.longest}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Longest</span>
             </div>
           </div>
         </div>
