@@ -381,7 +381,7 @@ export const coursesApi = {
 
   createConcept: async (data: {
     courseId: string;
-    name: string;
+    title: string;
     description?: string;
     parentId?: string;
     resourceLinks?: string[];

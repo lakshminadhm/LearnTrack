@@ -80,7 +80,7 @@ const ConceptList: React.FC<ConceptListProps> = ({
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center space-x-2">
-                <h4 className="font-medium text-gray-900">{concept.name || concept.title}</h4>
+                <h4 className="font-medium text-gray-900">{concept.title || concept.title}</h4>
                 {(concept.resource_links && concept.resource_links.length > 0) ? (
                   <a
                     href={concept.resource_links[0]}
@@ -90,9 +90,9 @@ const ConceptList: React.FC<ConceptListProps> = ({
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
-                ) : concept.resource_link && (
+                ) : concept.resource_links && (
                   <a
-                    href={concept.resource_link}
+                    href={concept.resource_links[0]}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-indigo-600 hover:text-indigo-700"

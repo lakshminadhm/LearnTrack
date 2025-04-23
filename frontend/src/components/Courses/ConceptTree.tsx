@@ -249,8 +249,8 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
   };
 
   return (
-    <div className="rounded-xl overflow-hidden border border-gray-200 bg-white/70">
-      <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-indigo-500/30 to-blue-400/30 flex flex-wrap justify-between items-center">
+    <div className="rounded-xl overflow-hidden border border-gray-200 bg-white/70 flex flex-col h-[calc(100vh-12rem)] max-h-[800px]">
+      <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-indigo-500/30 to-blue-400/30 flex flex-wrap justify-between items-center sticky top-0 z-10">
         <h3 className="text-xl sm:text-2xl font-bold text-indigo-800 tracking-tight">Learning Concepts</h3>
         <div className="flex gap-2 mt-2 sm:mt-0">
           <button
@@ -413,7 +413,7 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
         </div>
       )}
 
-      <div className="min-h-[200px] px-2 sm:px-6 py-4">
+      <div className="min-h-[200px] px-2 sm:px-6 py-4 overflow-y-auto flex-grow">
         {isLoading ? (
           <div className="py-12 text-center flex flex-col items-center justify-center">
             <div className="relative w-16 h-16 mb-4">

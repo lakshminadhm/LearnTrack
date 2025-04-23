@@ -270,7 +270,7 @@ export const useCourses = (options: UseCoursesOptions = {}) => {
 
   const createConcept = useCallback(async (data: {
     courseId: string;
-    name: string;
+    title: string;
     description?: string;
     parentId?: string;
     resourceLinks?: string[];
