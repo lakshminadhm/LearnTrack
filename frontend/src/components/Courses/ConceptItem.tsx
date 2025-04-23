@@ -9,6 +9,7 @@ interface ConceptItemProps {
   depth?: number;
   expanded?: boolean;
   onChildComplete?: (childId: string) => void;
+  conceptIndex?: string; // New prop for hierarchical numbering
 }
 
 const ConceptItem: React.FC<ConceptItemProps> = ({ 
@@ -17,7 +18,8 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
   onLoadChildren,
   depth = 0, 
   expanded = false,
-  onChildComplete
+  onChildComplete,
+  conceptIndex
 }) => {
   const [isExpanded, setIsExpanded] = useState(expanded);
   const [childConcepts, setChildConcepts] = useState<Concept[]>(concept.children || []);
@@ -197,7 +199,12 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
           onClick={handleToggleExpand}
         >
           <div className="flex items-center">
-            <span className={`font-medium transition-colors ${isCompleted ? 'text-green-800' : 'text-gray-800'}`}>
+            {conceptIndex && (
+              <span className="text-base font-mono bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded mr-2 font-semibold">
+                {conceptIndex}
+              </span>
+            )}
+            <span className={`font-medium transition-colors text-base ${isCompleted ? 'text-green-800' : 'text-gray-800'}`}>
               {concept.title}
             </span>         
 
@@ -217,7 +224,9 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
           </div>
           
           {concept.description && (
-            <p className="text-sm text-gray-500 mt-1">{concept.description}</p>
+            <p className="text-base text-gray-600 mt-1.5 leading-relaxed">
+              {concept.description}
+            </p>
           )}
         </div>
         
@@ -225,11 +234,11 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
           {hasResources && (
             <button
               onClick={toggleResourcesPopup}
-              className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-500 transition-colors focus:outline-none flex items-center space-x-1 text-xs"
+              className="px-2 py-1 rounded-md hover:bg-indigo-100 text-indigo-600 transition-colors focus:outline-none flex items-center space-x-1 text-sm font-medium border border-indigo-200"
               title={`${showResourcesPopup ? 'Hide' : 'Show'} resources`}
               data-concept-id={concept.id}
             >
-              <BookOpen className="h-3.5 w-3.5" />
+              <BookOpen className="h-4 w-4 mr-1" />
               <span>{showResourcesPopup ? 'Hide' : 'Show'} Resources</span>
             </button>
           )}
@@ -261,7 +270,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
           >
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-indigo-700">
+                <h3 className="text-base font-medium text-indigo-700">
                   Learning Resources
                 </h3>
                 <button 
@@ -278,11 +287,11 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
                       href={link} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex items-start p-1 rounded-md hover:bg-indigo-50 transition-colors"
+                      className="flex items-start p-2 rounded-md hover:bg-indigo-50 transition-colors"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Link2 className="h-4 w-4 text-indigo-500 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="text-sm text-indigo-600 hover:text-indigo-800 group-hover:underline break-all">
+                      <Link2 className="h-5 w-5 text-indigo-500 mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-base text-indigo-600 hover:text-indigo-800 group-hover:underline break-all">
                         {link}
                       </span>
                     </a>
@@ -296,7 +305,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
       
       {isExpanded && childConcepts.length > 0 && (
         <div className="concept-children">
-          {childConcepts.map(child => (
+          {childConcepts.map((child, index) => (
             <ConceptItem
               key={child.id}
               concept={child}
@@ -304,6 +313,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
               onLoadChildren={onLoadChildren}
               depth={depth + 1}
               onChildComplete={handleChildComplete}
+              conceptIndex={`${conceptIndex ? conceptIndex + '.' : ''}${index + 1}`}
             />
           ))}
         </div>

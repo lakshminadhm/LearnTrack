@@ -454,7 +454,7 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
           </div>
         ) : (
           <div className="concept-tree divide-y divide-indigo-100" role="tree" aria-label="Course concepts">
-            {concepts.map(concept => (
+            {concepts.map((concept, index) => (
               <ConceptItem
                 key={concept.id}
                 concept={concept}
@@ -490,6 +490,7 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
                     return updateChildCompletion(prevConcepts, childId);
                   });
                 }}
+                conceptIndex={`${index + 1}`}
               />
             ))}
           </div>

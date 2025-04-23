@@ -53,7 +53,7 @@ const CourseDetailPage: React.FC = () => {
     : (course.progress?.progress_percentage || 0);
 
   return (
-    <div className="w-full px-4 sm:px-6 mx-auto my-6 sm:my-10">
+    <div className="w-full px-4 mx-auto my-6 sm:my-10">
       <div className="backdrop-blur bg-white/80 border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-full">
         <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-indigo-500/80 to-blue-400/80 flex flex-col sm:flex-row sm:items-center sm:justify-between sticky top-0 z-10">
           <Link 
