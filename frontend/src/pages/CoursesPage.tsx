@@ -4,7 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import { Search, Filter, BookOpen, Clock, Award, ChevronRight } from 'lucide-react';
 import { useCourses } from '../hooks/useCourses';
 import { useNavigate } from 'react-router-dom';
-import { CourseDifficulty } from '../../../shared/src/types';
+import { CourseDifficulty } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const CoursesPage: React.FC = () => {
