@@ -175,13 +175,13 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
       transition={{ duration: 0.3 }}
     >
       <motion.div
-        className={`flex items-center p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200 relative ${
-          isCompleted ? 'bg-green-50 hover:bg-green-100' : ''} border-l-4 ${isCompleted ? 'border-green-500' : 'border-transparent hover:border-indigo-200'}`}
+        className={`flex items-center p-3 hover:bg-gray-50 hover:dark:bg-gray-800 cursor-pointer transition-all duration-200 relative dark:bg-gray-900 ${
+          isCompleted ? 'bg-green-50 hover:bg-green-100' : ''} border-l-2 ${isCompleted ? 'border-green-500' : 'border-transparent hover:border-indigo-300'}`}
         style={{ paddingLeft }}
         // whileHover={{ scale: 1.01 }}
       >
         <motion.button 
-          className="flex items-center mr-2 p-1 rounded-full hover:bg-white/50"
+          className="flex items-center mr-2 p-1 rounded-full hover:bg-white/50 hover:dark:bg-gray-700"
           onClick={handleToggleExpand}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
@@ -213,7 +213,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
                 {conceptIndex}
               </span>
             )}
-            <span className={`font-medium transition-colors text-base ${isCompleted ? 'text-green-800' : 'text-gray-800'}`}>
+            <span className={`font-medium transition-colors text-base ${isCompleted ? 'text-green-800 dark:text-green-400' : 'text-gray-800 dark:text-gray-200'}`}>
               {concept.title}
             </span>         
 
@@ -235,7 +235,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
           </div>
           
           {concept.description && (
-            <p className="text-base text-gray-600 mt-1.5 leading-relaxed">
+            <p className="text-base text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
               {concept.description}
             </p>
           )}
@@ -246,7 +246,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
             <motion.button
               ref={buttonRef}
               onClick={toggleResourcesPopup}
-              className="px-2 py-1 rounded-md hover:bg-indigo-100 text-indigo-600 transition-colors focus:outline-none flex items-center space-x-1 text-sm font-medium border border-indigo-200"
+              className="px-2 py-1 rounded-md hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 transition-colors focus:outline-none flex items-center space-x-1 text-sm font-medium border border-indigo-200"
               title={`${showResourcesPopup ? 'Hide' : 'Show'} resources`}
               data-concept-id={concept.id}
               whileHover={{ scale: 1.02 }}
@@ -262,7 +262,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
             className={`p-1.5 rounded-full transition-all duration-200 ${
               isCompleted 
                 ? 'text-green-600 hover:bg-green-100' 
-                : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
+                : 'text-gray-400 hover:text-green-600 hover:dark:bg-green-100 hover:bg-green-50'
             }`}
             title={isCompleted ? "Completed" : "Mark as completed"}
             whileTap={{ scale: 0.95 }}
@@ -281,18 +281,18 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
         <AnimatePresence>
           {showResourcesPopup && hasResources && (
           <motion.div 
-            className="absolute right-0 z-50 w-96 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            className="absolute right-0 z-50 w-96 origin-top-right rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
             style={{ top: '100%', right: '10px' }}
               ref={popupRef}
             >
               <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-base font-medium text-indigo-700">
+                  <h3 className="text-base font-medium text-indigo-700 dark:text-indigo-300">
                     Learning Resources
                   </h3>
                   <motion.button 
                     onClick={toggleResourcesPopup}
-                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                    className="text-gray-400 hover:text-gray-600 hover:dark:text-gray-200 focus:outline-none"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -306,11 +306,11 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
                         href={link} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-start p-2 rounded-md hover:bg-indigo-50 transition-colors"
+                        className="flex items-start p-2 rounded-md hover:bg-indigo-50 hover:dark:bg-indigo-100/5 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Link2 className="h-5 w-5 text-indigo-500 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-base text-indigo-600 hover:text-indigo-800 group-hover:underline break-all">
+                        <span className="text-base text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 group-hover:underline break-all">
                           {link}
                         </span>
                       </a>
@@ -331,6 +331,7 @@ const ConceptItem: React.FC<ConceptItemProps> = ({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
+            // className='border-l-2 border-indigo-100 dark:border-indigo-900 pl-2 ml-4'
           >
             {childConcepts.map((child, index) => (
               <ConceptItem

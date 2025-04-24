@@ -41,7 +41,7 @@ const generateColorFromString = (str: string): string => {
 const TechBreakdown: React.FC<TechBreakdownProps> = ({ techData, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center h-80">
+      <div className="p-6 rounded-lg shadow-md flex items-center justify-center h-80">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
           <div className="h-64 w-64 bg-gray-200 rounded-full"></div>
@@ -52,8 +52,8 @@ const TechBreakdown: React.FC<TechBreakdownProps> = ({ techData, isLoading }) =>
 
   if (!techData || techData.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Technology Breakdown</h3>
+      <div className="p-6 rounded-lg shadow-md">
+        <h3 className="text-xl font-semibold text-gray-400 dark:text-gray-500 mb-4">Technology Breakdown</h3>
         <div className="flex flex-col items-center justify-center h-64 text-gray-500">
           <p>No technology data available yet.</p>
           <p className="text-sm mt-2">Log your learning sessions to see your technology breakdown!</p>
@@ -104,8 +104,8 @@ const TechBreakdown: React.FC<TechBreakdownProps> = ({ techData, isLoading }) =>
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">Technology Breakdown</h3>
+    <div className="p-6 rounded-lg shadow-md">
+      <h3 className="text-xl font-semibold text-gray-400 dark:text-gray-500 mb-4">Technology Breakdown</h3>
       <div className="h-72">
         <Pie data={data} options={options} />
       </div>

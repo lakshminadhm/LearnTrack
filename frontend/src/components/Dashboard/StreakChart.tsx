@@ -32,7 +32,7 @@ interface StreakChartProps {
 const StreakChart: React.FC<StreakChartProps> = ({ streak, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center h-64">
+      <div className="p-6 rounded-lg shadow-md flex items-center justify-center h-64">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
           <div className="h-32 bg-gray-200 rounded w-full"></div>
@@ -43,8 +43,8 @@ const StreakChart: React.FC<StreakChartProps> = ({ streak, isLoading }) => {
 
   if (!streak || !streak.dates || streak.dates.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Learning Streak</h3>
+      <div className="p-6 rounded-lg shadow-md">
+        <h3 className="text-xl font-semibold text-gray-400 dark:text-gray-500 mb-4">Learning Streak</h3>
         <div className="flex flex-col items-center justify-center h-48 text-gray-500">
           <p>No streak data available yet.</p>
           <p className="text-sm mt-2">Start logging your daily learning to see your streak!</p>
@@ -136,7 +136,7 @@ const StreakChart: React.FC<StreakChartProps> = ({ streak, isLoading }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="p-6 rounded-lg shadow-md bg-background">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold text-gray-800">Learning Streak</h3>
         <div className="flex items-center space-x-4">

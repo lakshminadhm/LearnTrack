@@ -10,7 +10,7 @@ interface ProgressSummaryProps {
 const ProgressSummary: React.FC<ProgressSummaryProps> = ({ progress, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="p-6 rounded-lg shadow-md">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 rounded w-1/3 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -55,15 +55,15 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ progress, isLoading }
   ];
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold text-gray-800 mb-6">Your Progress</h3>
+    <div className="p-6 rounded-lg shadow-md">
+      <h3 className="text-xl font-semibold text-gray-500 dark:text-gray-400 mb-6">Your Progress</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div key={index} className="flex p-4 rounded-lg border border-gray-200 hover:border-indigo-300 transition-colors duration-300">
             <div className="mr-4">{stat.icon}</div>
             <div>
-              <p className="text-gray-500 text-sm">{stat.title}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">{stat.title}</p>
               <p className="text-2xl font-bold">{stat.value}{stat.suffix}</p>
               <p className="text-xs text-gray-500">{stat.description}</p>
             </div>
@@ -89,7 +89,7 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({ progress, isLoading }
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200">
                 {progress.recent_logs.map((log) => (
                   <tr key={log.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

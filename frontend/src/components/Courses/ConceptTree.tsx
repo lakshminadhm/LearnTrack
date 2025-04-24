@@ -249,9 +249,9 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
   };
 
   return (
-    <div className="rounded-xl overflow-hidden border border-gray-200 bg-white/70 flex flex-col h-[calc(100vh-12rem)] max-h-[800px]">
+    <div className="rounded-xl overflow-hidden border border-gray-200 bg-white dark:bg-gray-900 flex flex-col h-[calc(100vh-6rem)] max-h-[800px]">
       <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-indigo-500/30 to-blue-400/30 flex flex-wrap justify-between items-center sticky top-0 z-10">
-        <h3 className="text-xl sm:text-2xl font-bold text-indigo-800 tracking-tight">Learning Concepts</h3>
+        <h3 className="text-xl sm:text-2xl font-bold text-indigo-700 dark:text-indigo-300 tracking-tight">Learning Concepts</h3>
         <div className="flex gap-2 mt-2 sm:mt-0">
           <button
             className="rounded-full bg-white hover:bg-indigo-100 text-indigo-600 shadow-sm transition px-2 py-2 flex items-center focus:outline-none focus:ring-2 focus:ring-indigo-400"
@@ -436,7 +436,7 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-800 mb-1">No concepts yet</h3>
-            <p className="text-gray-500 mb-4 max-w-sm">Start building your knowledge tree by adding your first concept to this course.</p>
+            {/* <p className="text-gray-500 mb-4 max-w-sm">Start building your knowledge tree by adding your first concept to this course.</p> */}
             {/* Only show add button for admin */}
             {isAdmin && createConcept && !showAddForm && (
               <button
@@ -453,7 +453,7 @@ const ConceptTree: React.FC<ConceptTreeProps> = ({
             )}
           </div>
         ) : (
-          <div className="concept-tree divide-y divide-indigo-100" role="tree" aria-label="Course concepts">
+          <div className="concept-tree divide-y divide-indigo-300" role="tree" aria-label="Course concepts">
             {concepts.map((concept, index) => (
               <ConceptItem
                 key={concept.id}

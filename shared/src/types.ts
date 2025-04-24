@@ -230,3 +230,5 @@ export interface AdminConceptCreate {
 
 export interface AdminConceptUpdate extends AdminConceptCreate {
 }
+
+export type LabelVisibility = 'always' | 'hover' | 'never';

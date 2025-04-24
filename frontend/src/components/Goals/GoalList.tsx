@@ -93,8 +93,8 @@ const GoalList: React.FC<GoalListProps> = ({ goals, onEdit, onDelete, isLoading 
   };
   
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Learning Goals</h3>
+    <div className="dark:bg-surface-dark p-6 rounded-lg shadow-md">
+      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Your Learning Goals</h3>
       
       <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4 mb-6">
         <div className="flex-grow">
@@ -103,14 +103,14 @@ const GoalList: React.FC<GoalListProps> = ({ goals, onEdit, onDelete, isLoading 
             placeholder="Search goals..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            className="dark:bg-surface-dark w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
         <div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="dark:bg-surface-dark block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:text-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option value="all">All Statuses</option>
             <option value={GoalStatus.NOT_STARTED}>Not Started</option>

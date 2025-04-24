@@ -66,14 +66,14 @@ const GoalForm: React.FC<GoalFormProps> = ({
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">
+    <div className="dark:bg-surface-dark p-6 rounded-lg shadow-md">
+      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
         {initialData ? 'Edit Learning Goal' : 'Create New Learning Goal'}
       </h3>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Goal Title
           </label>
           <input
@@ -83,14 +83,14 @@ const GoalForm: React.FC<GoalFormProps> = ({
             value={formData.title}
             onChange={handleChange}
             required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="dark:bg-surface-dark mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             placeholder="e.g., Master React Hooks"
           />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="technology" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="technology" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Technology
             </label>
             <input
@@ -101,7 +101,7 @@ const GoalForm: React.FC<GoalFormProps> = ({
               onChange={handleChange}
               list="tech-options"
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="dark:bg-surface-dark mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="e.g., React, Python, AWS"
             />
             <datalist id="tech-options">
@@ -112,7 +112,7 @@ const GoalForm: React.FC<GoalFormProps> = ({
           </div>
           
           <div>
-            <label htmlFor="target_date" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="target_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Target Date
             </label>
             <input
@@ -123,13 +123,13 @@ const GoalForm: React.FC<GoalFormProps> = ({
               onChange={handleChange}
               min={new Date().toISOString().split('T')[0]}
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="dark:bg-surface-dark text-gray-800 dark:text-gray-200 mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
         </div>
         
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Description
           </label>
           <textarea
@@ -138,14 +138,14 @@ const GoalForm: React.FC<GoalFormProps> = ({
             value={formData.description}
             onChange={handleChange}
             rows={3}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="dark:bg-surface-dark mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             placeholder="What do you want to achieve? How will you measure success?"
           ></textarea>
         </div>
         
         {initialData && (
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Status
             </label>
             <select
@@ -153,7 +153,7 @@ const GoalForm: React.FC<GoalFormProps> = ({
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="dark:bg-surface-dark mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
               <option value={GoalStatus.NOT_STARTED}>Not Started</option>
               <option value={GoalStatus.IN_PROGRESS}>In Progress</option>

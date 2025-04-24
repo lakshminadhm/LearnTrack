@@ -60,13 +60,13 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="max-w-md mx-auto bg-surface-light dark:bg-surface-dark rounded-lg shadow-md overflow-hidden">
       <div className="py-8 px-6">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Create an Account</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-200 mb-6">Create an Account</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Username
             </label>
             <input
@@ -76,13 +76,13 @@ const Register: React.FC = () => {
               required
               value={userData.username}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block bg-background w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="johndoe"
             />
           </div>
           
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Email Address
             </label>
             <input
@@ -92,13 +92,13 @@ const Register: React.FC = () => {
               required
               value={userData.email}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block bg-background w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="your@email.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Password
             </label>
             <input
@@ -108,13 +108,13 @@ const Register: React.FC = () => {
               required
               value={userData.password}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block bg-background w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="••••••••"
             />
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Confirm Password
             </label>
             <input
@@ -124,7 +124,7 @@ const Register: React.FC = () => {
               required
               value={confirmPassword}
               onChange={handleChange}
-              className={`mt-1 block w-full px-3 py-2 border ${
+              className={`mt-1 block w-full px-3 py-2 border bg-background ${
                 passwordError ? 'border-red-500' : 'border-gray-300'
               } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
               placeholder="••••••••"
@@ -151,7 +151,7 @@ const Register: React.FC = () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">
+              <span className="px-2 bg-surface-light dark:bg-surface-dark text-gray-500">
                 Or continue with
               </span>
             </div>
@@ -160,7 +160,7 @@ const Register: React.FC = () => {
           <div className="mt-6">
             <button
               type="button"
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-surface-light dark:bg-surface-dark hover:bg-gray-50 hover:dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -182,9 +182,9 @@ const Register: React.FC = () => {
         </div>
         
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{' '}
-            <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <a href="/login" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 hover:dark:text-indigo-500">
               Log in
             </a>
           </p>

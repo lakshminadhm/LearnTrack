@@ -1,7 +1,8 @@
 import React from 'react';
 import { useCollapse } from 'react-collapsed';
 import { LearningTrack } from '../../../../shared/src/types';
-import { ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
+import { ChevronDown, ChevronUp, BookOpen, Clock, Award, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface TrackListProps {
   tracks: LearningTrack[];
@@ -23,31 +24,44 @@ const TrackListItem: React.FC<{
 }> = ({ track, isSelected, onSelect }) => {
   const { getToggleProps } = useCollapse({ isExpanded: isSelected });
   return (
-    <div
-      className={`bg-gray-800 rounded-lg overflow-hidden transition-shadow duration-300 ${
+    <motion.div
+      className={`bg-card border rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/50 ${
         isSelected ? 'ring-2 ring-indigo-500' : ''
       }`}
+      {...getToggleProps({
+        onClick: () => onSelect(track.id)
+      })}
     >
-      <div
-        className="p-6 cursor-pointer"
-        {...getToggleProps({
-          onClick: () => onSelect(track.id)
-        })}
-      >
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
-            <BookOpen className="w-6 h-6 text-indigo-400" />
-            <h3 className="text-xl font-semibold text-white">{track.title}</h3>
+      <div className="p-6">
+        <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+          {track.title}
+        </h3>
+        <p className="text-muted-foreground mb-4 line-clamp-2">
+          {track.description}
+        </p>
+        
+        {track.courses && (
+          <div className="space-y-2">
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Clock className="h-4 w-4 mr-2" />
+              <span>
+                {track.courses.reduce((acc, course) => acc + course.duration_hours, 0)} hours total
+              </span>
+            </div>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Award className="h-4 w-4 mr-2" />
+              <span>
+                {track.courses.length} {track.courses.length === 1 ? 'course' : 'courses'}
+              </span>
+            </div>
           </div>
-          {isSelected ? (
-            <ChevronUp className="w-5 h-5 text-gray-400" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-gray-400" />
-          )}
-        </div>
-        <p className="mt-2 text-gray-400">{track.description}</p>
+        )}
       </div>
-    </div>
+      <div className="px-6 py-4 bg-muted/50 border-t flex justify-between items-center">
+        <span className="text-sm font-medium text-foreground">View Track</span>
+        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+      </div>
+    </motion.div>
   );
 };
 

@@ -131,6 +131,7 @@ interface ThemeContextType {
   setMode: (mode: ThemeMode) => void;
   theme: ThemeObject;
   isDark: boolean;
+  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -143,6 +144,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const [theme, setTheme] = useState<ThemeObject>(lightTheme);
   const [isDark, setIsDark] = useState(false);
+
+  const toggleTheme = () => {
+    setMode(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   // Effect to handle theme changes and system preference
   useEffect(() => {
@@ -175,13 +180,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         root.classList.add(newSystemDark ? 'dark' : 'light');
       }
     };
-    
+
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [mode]);
 
   return (
-    <ThemeContext.Provider value={{ mode, setMode, theme, isDark }}>
+    <ThemeContext.Provider value={{ mode, setMode, theme, isDark, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

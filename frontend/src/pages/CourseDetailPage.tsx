@@ -24,7 +24,7 @@ const CourseDetailPage: React.FC = () => {
   const [course, setCourse] = useState<Course | null>(null);
   const [conceptProgress, setConceptProgress] = useState<number | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(true);
 
   // Animation hooks
   const [ref, inView] = useInView({
@@ -149,7 +149,7 @@ const CourseDetailPage: React.FC = () => {
 
   return (
     <motion.div 
-      className="space-y-6"
+      className="space-y-4 xl:space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -196,15 +196,15 @@ const CourseDetailPage: React.FC = () => {
               <p className="text-muted-foreground text-sm">{course.description}</p>
 
               <div className="mt-6 space-y-4">
-                <div className="flex items-center text-sm">
+                <div className="flex items-center text-sm dark:text-gray-200">
                   <Clock className="w-4 h-4 text-muted-foreground mr-2" />
                   <span>{course.duration_hours} hours</span>
                 </div>
-                <div className="flex items-center text-sm">
+                <div className="flex items-center text-sm dark:text-gray-200">
                   <Award className="w-4 h-4 text-muted-foreground mr-2" />
                   <span>{course.difficulty}</span>
                 </div>
-                <div className="flex items-center text-sm">
+                <div className="flex items-center text-sm dark:text-gray-200">
                   <BarChart2 className="w-4 h-4 text-muted-foreground mr-2" />
                   <span>{progressPercentage}% Complete</span>
                 </div>
@@ -251,7 +251,7 @@ const CourseDetailPage: React.FC = () => {
         </div>
 
         {/* Course Content */}
-        <div className="lg:col-span-9">
+        <div className="md:col-span-9">
           <motion.div
             ref={ref}
             variants={containerVariants}

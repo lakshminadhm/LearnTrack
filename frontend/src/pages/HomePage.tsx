@@ -103,15 +103,15 @@ const HomePage: React.FC = () => {
       {/* Features Section */}
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-gray-200">
             Track, Analyze, and Achieve
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div key={index} className="bg-surface-light dark:bg-surface-dark p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                 <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-bold mb-2 text-gray-800">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-gray-200">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -119,12 +119,12 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gray-100 py-16 rounded-xl mt-12">
+      <section className="bg-surface-light dark:bg-surface-dark py-16 rounded-xl mt-12">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4 text-gray-800">
+          <h2 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-200">
             Ready to Level Up Your Learning?
           </h2>
-          <p className="text-xl mb-8 text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl mb-8 text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Join thousands of developers who use LearnTrack to stay consistent, track progress, and reach their learning goals.
           </p>
           {isAuthenticated ? (
