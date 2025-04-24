@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Course, CourseDifficulty, AdminCourseCreate } from '../../../../shared/src/types';
 import { useAdmin } from '../../hooks/useAdmin';
 import { useCourses } from '../../hooks/useCourses';
+import { CourseDifficulty, AdminCourseCreate, Course } from '../../types';
 
 const CourseForm: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();

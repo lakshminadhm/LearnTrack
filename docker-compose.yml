@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgres://learntrack:learntrack@db:5432/learntrack
+    depends_on:
+      - db
+    networks:
+      - learntrack-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - learntrack-network
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: learntrack
+      POSTGRES_PASSWORD: learntrack
+      POSTGRES_DB: learntrack
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - learntrack-network
+
+networks:
+  learntrack-network:
+    driver: bridge
+
+volumes:
+  pgdata:

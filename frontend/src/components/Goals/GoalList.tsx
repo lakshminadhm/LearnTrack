@@ -1,13 +1,6 @@
-import React, { useState } from 'react';
-import { Goal, GoalStatus } from '../../../../shared/src/types';
-import { Edit, Trash2, Calendar, Code, CheckCircle, Circle, Clock } from 'lucide-react';
-
-interface GoalListProps {
-  goals: Goal[];
-  onEdit: (goal: Goal) => void;
-  onDelete: (id: string) => void;
-  isLoading: boolean;
-}
+import React, { useState, useEffect } from 'react';
+import { BiPencil, BiRefresh, BiCheck, BiTrash } from 'react-icons/bi';
+import { Goal, GoalStatus } from '../../types';
 
 const GoalList: React.FC<GoalListProps> = ({ goals, onEdit, onDelete, isLoading }) => {
   const [statusFilter, setStatusFilter] = useState<string>('all');

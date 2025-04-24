@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Concept, CourseDifficulty } from '../../../../../shared/src/types';
+import { Concept, CourseDifficulty } from '../../../types';
 import { Save, X, Plus, Trash } from 'lucide-react';
 import { useAdmin } from '../../../hooks/useAdmin';
 import { adminApi } from '../../../services/api';

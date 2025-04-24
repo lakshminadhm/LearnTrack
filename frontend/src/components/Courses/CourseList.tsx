@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Course } from '../../../../shared/src/types';
+import { Course } from '../../types';
 import { BookOpen, Search, Filter, X, Check, RefreshCw } from 'lucide-react';
 import CourseItem from './CourseItem';
 import { cn } from '../../utils/cn';
@@ -414,7 +414,7 @@ const CourseList: React.FC<CourseListProps> = ({
                     className={cn(
                       "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium",
                       sortBy === option.value
-                        ? "bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300"
+                        ? "bg-secondary-100 text-secondary-800 dark:bg-secondary-900/50 dark:text-secondary-300"
                         : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
                     )}
                   >

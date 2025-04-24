@@ -45,7 +45,7 @@ router.get('/tracks/:id', [
       });
     }
     // Format courses to match the expected structure
-    const formattedCourses = track.courses.map(course => ({
+    const formattedCourses = track.courses.map((course: any) => ({
       ...course,
       progress: course.progress?.[0] || null
     }));
@@ -286,7 +286,7 @@ router.get('/courses/progress', async (req: any, res: express.Response) => {
 // Get course by ID
 router.get('/courses/:id', [
   param('id').isUUID().withMessage('Invalid course ID')
-], async (req, res) => {
+], async (req: express.Request, res: express.Response) => {
   const courseId = req.params.id;
 
   try {
@@ -453,7 +453,7 @@ router.get('/courses/:id/concept-tree', [
       conceptMap.set(concept.id, concept);
     });
 
-    const rootConcepts = [];
+    const rootConcepts: any[] = [];
     formattedConcepts.forEach(concept => {
       if (concept.parent_id) {
         const parent = conceptMap.get(concept.parent_id);

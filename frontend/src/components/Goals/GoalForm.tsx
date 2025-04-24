@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Goal, GoalCreate, GoalStatus } from '../../../../shared/src/types';
+import { Goal, GoalCreate, GoalStatus } from '../../types';
 
 interface GoalFormProps {
   onSubmit: (data: GoalCreate) => Promise<boolean>;
