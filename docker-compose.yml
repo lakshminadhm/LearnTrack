@@ -22,6 +22,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5173:80"
+      - "443:443"  # Add HTTPS port
+    environment:
+      - VITE_API_URL=http://localhost:3000/api  # Add this environment variable
+    volumes:
+      - ./certs:/etc/nginx/ssl  # Mount certificate directory
     depends_on:
       - backend
     networks:

@@ -44,6 +44,7 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost:5174',
     'https://learntrack.vercel.app',
+    'http://20.246.104.185',
   ],
   credentials: true,
 }));

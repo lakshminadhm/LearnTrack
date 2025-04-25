@@ -1,0 +1,38 @@
+services:
+  # Backend API service
+  - type: web
+    name: learntrack-backend
+    runtime: node
+    # env: docker
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: SUPABASE_URL
+        sync: false  # This will prompt you to enter value in the Render dashboard
+      - key: SUPABASE_ANON_KEY
+        sync: false
+    
+  # Frontend web service
+  - type: web
+    runtime: node
+    name: learntrack-frontend
+    # env: docker
+    dockerfilePath: ./frontend/Dockerfile
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: learntrack-backend
+          type: web
+          property: host
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+
+databases:
+  - name: learntrack-db
+    databaseName: learntrack
+    user: learntrack

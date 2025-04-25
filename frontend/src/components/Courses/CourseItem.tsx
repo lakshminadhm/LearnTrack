@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Course, CourseDifficulty, CourseStatus } from '../../../../shared/src/types';
+import { useNavigate, Link } from 'react-router-dom';
+import { Course, CourseDifficulty, CourseStatus } from '../../types';
+import { motion } from 'framer-motion';
 import { Clock, Award, MoreVertical, RotateCcw, Play, ExternalLink, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
